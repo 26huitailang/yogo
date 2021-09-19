@@ -42,3 +42,17 @@ func FooControllerHandler(ctx *framework.Context) error {
 	}
 	return nil
 }
+
+func UserLoginController(c *framework.Context) error {
+	c.Json(200, "OK")
+	return nil
+}
+
+func SubjectListController(c *framework.Context) error {
+	type subject struct {
+		Name string
+		Id   int
+	}
+	c.Json(200, []*subject{{"hello", 1}, {"world", 2}})
+	return nil
+}
