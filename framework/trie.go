@@ -16,6 +16,10 @@ type node struct {
 	children []*node
 }
 
+func newNode() *node {
+	return &node{}
+}
+
 func NewTree() *Tree {
 	root := newNode()
 	return &Tree{
@@ -82,10 +86,6 @@ func (tree *Tree) FindHandler(uri string) ControllerHandler {
 	return matchNode.handler
 }
 
-func newNode() *node {
-	return &node{}
-}
-
 // isWildSegment 判断一个segment是否是通用segment，即以:开头
 func isWildSegment(segment string) bool {
 	return strings.HasPrefix(segment, ":")
@@ -112,7 +112,7 @@ func (n *node) filterChildNodes(segment string) []*node {
 	return nodes
 }
 
-// 判断路有是否已经在节点的所有子节点树中存在了
+// 判断路由是否已经在节点的所有子节点树中存在了
 func (n *node) matchNode(uri string) *node {
 	segments := strings.SplitN(uri, "/", 2)
 	segment := segments[0]
