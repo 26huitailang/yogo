@@ -7,6 +7,9 @@ func registerRouter(core *framework.Core) {
 
 	subjectApi := core.Group("/subject")
 	{
-		subjectApi.Get("/list", SubjectListController)
+		subjectApi.Get("/list/all", SubjectListController)
+		subjectApi.Get("/:id", SubjectGetController)
+		subjectApi.Delete("/:id", SubjectDeleteController)
+		subjectApi.Put("/:id", SubjectUpdateController)
 	}
 }
