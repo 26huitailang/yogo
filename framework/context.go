@@ -16,7 +16,8 @@ type Context struct {
 	ctx            context.Context
 	request        *http.Request
 	responseWriter http.ResponseWriter
-	handler        ControllerHandler
+	handlers       []ControllerHandler
+	index          int // 当钱请求调用到调用链的哪个节点
 
 	hasTimeout bool
 	writerMux  *sync.Mutex
@@ -28,7 +29,18 @@ func NewContext(r *http.Request, w http.ResponseWriter) *Context {
 		responseWriter: w,
 		ctx:            r.Context(),
 		writerMux:      &sync.Mutex{},
+		index:          -1,
 	}
+}
+
+func (ctx *Context) Next() error {
+	ctx.index++
+	if ctx.index < len(ctx.handlers) {
+		if err := ctx.handlers[ctx.index](ctx); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // #region base function
@@ -45,8 +57,8 @@ func (ctx *Context) GetResponse() http.ResponseWriter {
 	return ctx.responseWriter
 }
 
-func (ctx *Context) SetHandler(handler ControllerHandler) {
-	ctx.handler = handler
+func (ctx *Context) SetHandler(handlers []ControllerHandler) {
+	ctx.handlers = handlers
 }
 
 func (ctx *Context) SetHasTimeout() {

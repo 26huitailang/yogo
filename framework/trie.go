@@ -12,7 +12,7 @@ type Tree struct {
 type node struct {
 	isLast   bool
 	segment  string
-	handler  ControllerHandler
+	handlers []ControllerHandler
 	children []*node
 }
 
@@ -36,7 +36,7 @@ func NewTree() *Tree {
 /:user/name(冲突)
 /:user/name/:age
 */
-func (tree *Tree) AddRouter(uri string, handler ControllerHandler) error {
+func (tree *Tree) AddRouter(uri string, handlers []ControllerHandler) error {
 	n := tree.root
 	if n.matchNode(uri) != nil {
 		return errors.New("route exist: " + uri)
@@ -66,7 +66,7 @@ func (tree *Tree) AddRouter(uri string, handler ControllerHandler) error {
 			cnode.segment = segment
 			if isLast {
 				cnode.isLast = true
-				cnode.handler = handler
+				cnode.handlers = handlers
 			}
 			n.children = append(n.children, cnode)
 			objNode = cnode
@@ -78,12 +78,12 @@ func (tree *Tree) AddRouter(uri string, handler ControllerHandler) error {
 }
 
 // 匹配uri
-func (tree *Tree) FindHandler(uri string) ControllerHandler {
+func (tree *Tree) FindHandler(uri string) []ControllerHandler {
 	matchNode := tree.root.matchNode(uri)
 	if matchNode == nil {
 		return nil
 	}
-	return matchNode.handler
+	return matchNode.handlers
 }
 
 // isWildSegment 判断一个segment是否是通用segment，即以:开头

@@ -7,7 +7,8 @@ import (
 )
 
 type Core struct {
-	router map[string]*Tree
+	router      map[string]*Tree
+	middlewares []ControllerHandler
 }
 
 func NewCore() *Core {
@@ -19,26 +20,30 @@ func NewCore() *Core {
 	return &Core{router: router}
 }
 
-func (c *Core) Get(url string, handler ControllerHandler) {
-	if err := c.router["GET"].AddRouter(url, handler); err != nil {
+func (c *Core) Get(url string, handlers ...ControllerHandler) {
+	allHandlers := append(c.middlewares, handlers...)
+	if err := c.router["GET"].AddRouter(url, allHandlers); err != nil {
 		log.Fatal("add router error: ", err)
 	}
 }
 
-func (c *Core) Post(url string, handler ControllerHandler) {
-	if err := c.router["POST"].AddRouter(url, handler); err != nil {
+func (c *Core) Post(url string, handlers ...ControllerHandler) {
+	allHandlers := append(c.middlewares, handlers...)
+	if err := c.router["POST"].AddRouter(url, allHandlers); err != nil {
 		log.Fatal("add router error: ", err)
 	}
 }
 
-func (c *Core) Put(url string, handler ControllerHandler) {
-	if err := c.router["PUT"].AddRouter(url, handler); err != nil {
+func (c *Core) Put(url string, handlers ...ControllerHandler) {
+	allHandlers := append(c.middlewares, handlers...)
+	if err := c.router["PUT"].AddRouter(url, allHandlers); err != nil {
 		log.Fatal("add router error: ", err)
 	}
 }
 
-func (c *Core) Delete(url string, handler ControllerHandler) {
-	if err := c.router["DELETE"].AddRouter(url, handler); err != nil {
+func (c *Core) Delete(url string, handlers ...ControllerHandler) {
+	allHandlers := append(c.middlewares, handlers...)
+	if err := c.router["DELETE"].AddRouter(url, allHandlers); err != nil {
 		log.Fatal("add router error: ", err)
 	}
 }
@@ -47,7 +52,11 @@ func (c *Core) Group(prefix string) IGroup {
 	return NewGroup(c, prefix)
 }
 
-func (c *Core) FindRouteByRequest(request *http.Request) ControllerHandler {
+func (c *Core) Use(middlewares ...ControllerHandler) {
+	c.middlewares = middlewares
+}
+
+func (c *Core) FindRouteByRequest(request *http.Request) []ControllerHandler {
 	uri := request.URL.Path
 	method := request.Method
 	upperMethod := strings.ToUpper(method)
@@ -63,16 +72,16 @@ func (c *Core) ServeHTTP(response http.ResponseWriter, request *http.Request) {
 	log.Println("core.serveHTTP")
 	ctx := NewContext(request, response)
 
-	router := c.FindRouteByRequest(request)
-	if router == nil {
+	handlers := c.FindRouteByRequest(request)
+	if handlers == nil {
 		ctx.Json(http.StatusNotFound, "not found")
 		return
 	}
 	log.Println("core.router")
 
-	ctx.SetHandler(router)
+	ctx.SetHandler(handlers)
 
-	if err := router(ctx); err != nil {
+	if err := ctx.Next(); err != nil {
 		ctx.Json(http.StatusInternalServerError, "inner error")
 		return
 	}
