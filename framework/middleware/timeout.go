@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"log"
+	"net/http"
 	"time"
 
 	"github.com/26huitailang/yogo/framework"
@@ -32,12 +33,14 @@ func TimeoutHandler(d time.Duration) framework.ControllerHandler {
 		select {
 		case p := <-panicChan:
 			log.Println(p)
-			c.Json(500, "time out")
+			c.SetStatus(http.StatusInternalServerError)
+			c.Json("time out")
 		case <-finish:
 			log.Println("finish")
 		case <-durationCtx.Done():
 			c.SetHasTimeout()
-			c.Json(500, "time out")
+			c.SetStatus(http.StatusInternalServerError)
+			c.Json("time out")
 		}
 		return nil
 	}

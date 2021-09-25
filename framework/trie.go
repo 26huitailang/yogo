@@ -97,6 +97,7 @@ func (n *node) filterChildNodes(segment string) []*node {
 		return nil
 	}
 	// 如果segment是通配符，则所有下一层子节点都满足需求
+	println("segment", segment)
 	if isWildSegment(segment) {
 		return n.children
 	}
@@ -114,6 +115,7 @@ func (n *node) filterChildNodes(segment string) []*node {
 
 // 判断路由是否已经在节点的所有子节点树中存在了
 func (n *node) matchNode(uri string) *node {
+	println(uri)
 	segments := strings.SplitN(uri, "/", 2)
 	segment := segments[0]
 	if !isWildSegment(segment) {
