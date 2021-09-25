@@ -78,6 +78,10 @@ func (c *Core) ServeHTTP(response http.ResponseWriter, request *http.Request) {
 	}
 	log.Println("core.router")
 
+	// 设置路由参数
+	params := node.parseParamsFromEndNode(request.URL.Path)
+	ctx.SetParams(params)
+
 	ctx.SetHandler(node.handlers)
 
 	if err := ctx.Next(); err != nil {
