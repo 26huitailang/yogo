@@ -16,7 +16,8 @@ func registerRouter(core *framework.Core) {
 	subjectApi.Use(middleware.Test2())
 	{
 		subjectApi.Get("/list/all", SubjectListController)
-		subjectApi.Get("/:id", SubjectGetController)
+		subjectApi.Get("/:id/hello", SubjectGetController)
+		subjectApi.Get("/:id/world", SubjectGetController)
 		subjectApi.Delete("/:id", SubjectDeleteController)
 		subjectApi.Put("/:id", SubjectUpdateController)
 	}
