@@ -57,6 +57,10 @@ func (ctx *Context) SetHandler(handlers []ControllerHandler) {
 	ctx.handlers = handlers
 }
 
+func (ctx *Context) SetParams(params map[string]string) {
+	ctx.params = params
+}
+
 func (ctx *Context) SetHasTimeout() {
 	ctx.hasTimeout = true
 }
