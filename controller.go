@@ -3,9 +3,11 @@ package main
 import (
 	"fmt"
 	"github.com/26huitailang/yogo/framework"
+	"time"
 )
 
 func UserLoginController(c *framework.Context) error {
+	time.Sleep(5 * time.Second)
 	c.SetOkStatus().Json("ok, UserLoginController")
 	return nil
 }
