@@ -1,23 +1,23 @@
 package main
 
 import (
-	"github.com/26huitailang/yogo/framework"
+	"github.com/26huitailang/yogo/framework/gin"
 	"github.com/26huitailang/yogo/framework/middleware"
 )
 
-func registerRouter(core *framework.Core) {
+func registerRouter(core *gin.Engine) {
 	core.Use(
-		middleware.Recovery(),
+		gin.Recovery(),
 		middleware.Cost(),
 	)
-	core.Get("/user/login", UserLoginController)
+	core.GET("/user/login", UserLoginController)
 
 	subjectApi := core.Group("/subject")
 	subjectApi.Use(middleware.Test2())
 	{
-		subjectApi.Get("/list/all", SubjectListController)
-		subjectApi.Get("/:id", SubjectGetController)
-		subjectApi.Delete("/:id", SubjectDeleteController)
-		subjectApi.Put("/:id", SubjectUpdateController)
+		subjectApi.GET("/list/all", SubjectListController)
+		subjectApi.GET("/:id", SubjectGetController)
+		subjectApi.DELETE("/:id", SubjectDeleteController)
+		subjectApi.PUT("/:id", SubjectUpdateController)
 	}
 }

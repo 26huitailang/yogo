@@ -4,13 +4,13 @@ import (
 	"log"
 	"time"
 
-	"github.com/26huitailang/yogo/framework"
+	"github.com/26huitailang/yogo/framework/gin"
 )
 
-func Cost() framework.ControllerHandler {
-	return func(c *framework.Context) error {
-		uri := c.GetRequest().RequestURI
-		method := c.GetRequest().Method
+func Cost() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		uri := c.Request.RequestURI
+		method := c.Request.Method
 		start := time.Now()
 
 		c.Next()
@@ -18,6 +18,5 @@ func Cost() framework.ControllerHandler {
 		end := time.Now()
 		cost := end.Sub(start)
 		log.Printf("%s %s: %s", method, uri, cost)
-		return nil
 	}
 }

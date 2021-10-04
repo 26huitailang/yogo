@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/26huitailang/yogo/framework"
+	"github.com/26huitailang/yogo/framework/gin"
 )
 
-func TimeoutHandler(d time.Duration) framework.ControllerHandler {
-	return func(c *framework.Context) error {
+func TimeoutHandler(d time.Duration) gin.HandlerFunc {
+	return func(c *gin.Context) {
 		finish := make(chan struct{}, 1)
 		panicChan := make(chan interface{}, 1)
 
@@ -24,7 +24,6 @@ func TimeoutHandler(d time.Duration) framework.ControllerHandler {
 					panicChan <- p
 				}
 			}()
-
 			c.Next()
 
 			finish <- struct{}{}
@@ -32,16 +31,12 @@ func TimeoutHandler(d time.Duration) framework.ControllerHandler {
 
 		select {
 		case p := <-panicChan:
+			c.ISetStatus(http.StatusInternalServerError).IJson("time out")
 			log.Println(p)
-			c.SetStatus(http.StatusInternalServerError)
-			c.Json("time out")
 		case <-finish:
 			log.Println("finish")
 		case <-durationCtx.Done():
-			c.SetHasTimeout()
-			c.SetStatus(http.StatusInternalServerError)
-			c.Json("time out")
+			c.ISetStatus(http.StatusInternalServerError).IJson("time out")
 		}
-		return nil
 	}
 }

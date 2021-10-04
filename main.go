@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"github.com/26huitailang/yogo/framework"
+	"github.com/26huitailang/yogo/framework/gin"
 	"log"
 	"net/http"
 	"os"
@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	core := framework.NewCore()
+	core := gin.New()
 	registerRouter(core)
 	server := &http.Server{
 		Handler: core,

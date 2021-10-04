@@ -3,23 +3,21 @@ package middleware
 import (
 	"fmt"
 
-	"github.com/26huitailang/yogo/framework"
+	"github.com/26huitailang/yogo/framework/gin"
 )
 
-func Test1() framework.ControllerHandler {
-	return func(c *framework.Context) error {
+func Test1() gin.HandlerFunc {
+	return func(c *gin.Context) {
 		fmt.Println("middleware pre test1")
 		c.Next()
 		fmt.Println("middleware post test1")
-		return nil
 	}
 }
 
-func Test2() framework.ControllerHandler {
-	return func(c *framework.Context) error {
+func Test2() gin.HandlerFunc {
+	return func(c *gin.Context) {
 		fmt.Println("middleware pre test2")
 		c.Next()
 		fmt.Println("middleware post test2")
-		return nil
 	}
 }
