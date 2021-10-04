@@ -2,36 +2,31 @@ package main
 
 import (
 	"fmt"
-	"github.com/26huitailang/yogo/framework"
+	"github.com/26huitailang/yogo/framework/gin"
 	"time"
 )
 
-func UserLoginController(c *framework.Context) error {
+func UserLoginController(c *gin.Context) {
 	time.Sleep(5 * time.Second)
-	c.SetOkStatus().Json("ok, UserLoginController")
-	return nil
+	c.ISetOkStatus().IJson("ok, UserLoginController")
 }
 
-func SubjectListController(c *framework.Context) error {
+func SubjectListController(c *gin.Context) {
 	type subject struct {
 		Name string
 		Id   int
 	}
-	c.SetOkStatus().Json([]*subject{{"hello", 1}, {"world", 2}})
-	return nil
+	c.ISetOkStatus().IJson([]*subject{{"hello", 1}, {"world", 2}})
 }
 
-func SubjectGetController(c *framework.Context) error {
-	c.SetOkStatus().Json(fmt.Sprintf("ok, SubjectGetController: %s", c.Param("id")))
-	return nil
+func SubjectGetController(c *gin.Context) {
+	c.ISetOkStatus().IJson(fmt.Sprintf("ok, SubjectGetController: %s", c.YogoParam("id")))
 }
 
-func SubjectUpdateController(c *framework.Context) error {
-	c.SetOkStatus().Json("ok, SubjectGetController")
-	return nil
+func SubjectUpdateController(c *gin.Context) {
+	c.ISetOkStatus().IJson("ok, SubjectGetController")
 }
 
-func SubjectDeleteController(c *framework.Context) error {
-	c.SetOkStatus().Json("ok, SubjectGetController")
-	return nil
+func SubjectDeleteController(c *gin.Context) {
+	c.ISetOkStatus().IJson("ok, SubjectGetController")
 }
