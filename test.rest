@@ -3,3 +3,6 @@ http://localhost:8080/user/login
 
 ###
 http://localhost:8080/subject/1
+
+###
+http://localhost:8080/subject/list/all

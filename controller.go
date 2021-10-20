@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/26huitailang/yogo/framework/gin"
+	"github.com/26huitailang/yogo/provider/demo"
 	"time"
 )
 
@@ -12,11 +13,9 @@ func UserLoginController(c *gin.Context) {
 }
 
 func SubjectListController(c *gin.Context) {
-	type subject struct {
-		Name string
-		Id   int
-	}
-	c.ISetOkStatus().IJson([]*subject{{"hello", 1}, {"world", 2}})
+	demoService := c.MustMake(demo.Key).(demo.Service)
+	foo := demoService.GetFoo()
+	c.ISetOkStatus().IJson(foo)
 }
 
 func SubjectGetController(c *gin.Context) {

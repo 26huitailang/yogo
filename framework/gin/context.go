@@ -7,6 +7,7 @@ package gin
 import (
 	"errors"
 	"fmt"
+	"github.com/26huitailang/yogo/framework"
 	"io"
 	"io/ioutil"
 	"math"
@@ -78,6 +79,9 @@ type Context struct {
 	// SameSite allows a server to define a cookie attribute making it impossible for
 	// the browser to send this cookie along with cross-site requests.
 	sameSite http.SameSite
+
+	// 服务容器
+	container framework.Container
 }
 
 /************************************/
@@ -1175,4 +1179,16 @@ func (c *Context) Value(key interface{}) interface{} {
 		return val
 	}
 	return nil
+}
+
+func (ctx *Context) Make(key string) (interface{}, error) {
+	return ctx.container.Make(key)
+}
+
+func (ctx *Context) MustMake(key string) interface{} {
+	return ctx.container.MustMake(key)
+}
+
+func (ctx *Context) MakeNew(key string, params []interface{}) (interface{}, error) {
+	return ctx.container.MakeNew(key, params)
 }
