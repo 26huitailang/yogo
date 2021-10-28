@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/26huitailang/yogo/framework/gin"
 	"github.com/26huitailang/yogo/framework/middleware"
+	"github.com/26huitailang/yogo/framework/provider/app"
 	"github.com/26huitailang/yogo/provider/demo"
 	"log"
 	"net/http"
@@ -15,6 +16,8 @@ import (
 
 func main() {
 	core := gin.New()
+	// specified BaseFolder
+	core.Bind(&app.YogoAppProvider{BaseFolder: "/tmp"})
 	core.Bind(&demo.DemoServiceProvider{})
 	core.Use(gin.Recovery())
 	core.Use(middleware.Cost())
