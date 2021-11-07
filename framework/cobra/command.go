@@ -19,6 +19,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/26huitailang/yogo/framework"
 	"io"
 	"os"
 	"path/filepath"
@@ -36,6 +37,9 @@ type FParseErrWhitelist flag.ParseErrorsWhitelist
 // you to define the usage and description as part of your command
 // definition to ensure usability.
 type Command struct {
+	// service container
+	container framework.Container
+
 	// Use is the one-line usage message.
 	// Recommended syntax is as follow:
 	//   [ ] identifies an optional argument. Arguments that are not enclosed in brackets are required.

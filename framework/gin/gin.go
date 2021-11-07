@@ -578,11 +578,3 @@ func redirectRequest(c *Context) {
 	http.Redirect(c.Writer, req, rURL, code)
 	c.writermem.WriteHeaderNow()
 }
-
-func (engine *Engine) Bind(provider framework.ServiceProvider) error {
-	return engine.container.Bind(provider)
-}
-
-func (engine *Engine) IsBind(key string) bool {
-	return engine.container.IsBind(key)
-}

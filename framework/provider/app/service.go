@@ -22,7 +22,7 @@ func (y YogoApp) ConfigFolder() string {
 }
 
 func (y YogoApp) ProviderFolder() string {
-	return filepath.Join(y.BaseFolder(), "provider")
+	return filepath.Join(y.BaseFolder(), "app")
 }
 
 func (y YogoApp) MiddlewareFolder() string {
