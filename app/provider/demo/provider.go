@@ -9,7 +9,7 @@ import (
 type DemoServiceProvider struct{}
 
 func (sp *DemoServiceProvider) Register(c framework.Container) framework.NewInstance {
-	return NewDemoService
+	return NewService
 }
 
 func (sp *DemoServiceProvider) Boot(c framework.Container) error {
@@ -26,5 +26,5 @@ func (sp *DemoServiceProvider) Params(c framework.Container) []interface{} {
 }
 
 func (sp *DemoServiceProvider) Name() string {
-	return Key
+	return DemoKey
 }
