@@ -21,6 +21,7 @@ var FooCommand = &cobra.Command{
 	RunE: func(c *cobra.Command, args []string) error {
 		container := c.GetContainer()
 		log.Println(container)
+		log.Println("execute foo command")
 		return nil
 	},
 }

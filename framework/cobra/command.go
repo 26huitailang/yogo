@@ -26,6 +26,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/robfig/cron/v3"
 	flag "github.com/spf13/pflag"
 )
 
@@ -37,6 +38,10 @@ type FParseErrWhitelist flag.ParseErrorsWhitelist
 // you to define the usage and description as part of your command
 // definition to ensure usability.
 type Command struct {
+	// Command 支持cron，只在RootCommand中有这个值
+	Cron      *cron.Cron
+	CronSpecs []CronSpec
+
 	// service container
 	container framework.Container
 
