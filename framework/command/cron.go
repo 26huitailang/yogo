@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/26huitailang/yogo/framework/cobra"
 	"github.com/26huitailang/yogo/framework/contract"
+	"github.com/26huitailang/yogo/framework/util"
 	"github.com/erikdubbelboer/gspt"
 	"github.com/sevlyar/go-daemon"
 	"io/ioutil"
@@ -17,6 +18,7 @@ var cronDaemon = false
 func initCronCommand() *cobra.Command {
 	cronStartCommand.Flags().BoolVarP(&cronDaemon, "daemon", "d", false, "start serve daemon")
 	cronCommand.AddCommand(cronStartCommand)
+	cronCommand.AddCommand(cronListCommand)
 	return cronCommand
 }
 
@@ -87,6 +89,20 @@ var cronStartCommand = &cobra.Command{
 
 		gspt.SetProcTitle("yogo cron")
 		c.Root().Cron.Run()
+		return nil
+	},
+}
+
+var cronListCommand = &cobra.Command{
+	Use:   "list",
+	Short: "列出所有的定时任务",
+	RunE: func(c *cobra.Command, args []string) error {
+		cronSpecs := c.Root().CronSpecs
+		ps := [][]string{}
+		for _, cronSpec := range cronSpecs {
+			ps = append(ps, []string{cronSpec.Type, cronSpec.Spec, cronSpec.Cmd.Use, cronSpec.Cmd.Short, cronSpec.ServiceName})
+		}
+		util.PrettyPrint(ps)
 		return nil
 	},
 }
