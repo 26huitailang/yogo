@@ -4,16 +4,32 @@ import (
 	"errors"
 	"github.com/26huitailang/yogo/framework"
 	"github.com/26huitailang/yogo/framework/util"
+	"github.com/google/uuid"
 	"path/filepath"
 )
 
 type YogoApp struct {
+	appId      string
 	container  framework.Container
 	baseFolder string
 }
 
+func NewYogoApp(params ...interface{}) (interface{}, error) {
+	if len(params) != 2 {
+		return nil, errors.New("param error")
+	}
+	container := params[0].(framework.Container)
+	baseFolder := params[1].(string)
+	appId := uuid.New().String()
+	return &YogoApp{appId: appId, baseFolder: baseFolder, container: container}, nil
+}
+
 func (y YogoApp) Version() string {
 	return "0.0.1"
+}
+
+func (y *YogoApp) AppID() string {
+	return y.appId
 }
 
 func (y YogoApp) ConfigFolder() string {
@@ -60,13 +76,4 @@ func (y YogoApp) RuntimeFolder() string {
 
 func (y YogoApp) LogFolder() string {
 	return filepath.Join(y.StorageFolder(), "log")
-}
-
-func NewYogoApp(params ...interface{}) (interface{}, error) {
-	if len(params) != 2 {
-		return nil, errors.New("param error")
-	}
-	container := params[0].(framework.Container)
-	baseFolder := params[1].(string)
-	return &YogoApp{baseFolder: baseFolder, container: container}, nil
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/26huitailang/yogo/framework"
 	"github.com/26huitailang/yogo/framework/cobra"
 	"github.com/26huitailang/yogo/framework/command"
+	"time"
 )
 
 func RunCommand(container framework.Container) error {
@@ -16,7 +17,6 @@ func RunCommand(container framework.Container) error {
 			cmd.InitDefaultHelpCmd()
 			return cmd.Help()
 		},
-		// todo: 尝试false是什么情况
 		CompletionOptions: cobra.CompletionOptions{DisableDefaultCmd: true},
 	}
 	rootCmd.SetContainer(container)
@@ -26,6 +26,5 @@ func RunCommand(container framework.Container) error {
 }
 
 func AddAppCommand(rootCmd *cobra.Command) {
-	rootCmd.AddCommand(demo.InitFoo())
-	rootCmd.AddCronCommand("* * * * * *", demo.FooCommand)
+	rootCmd.AddDistributedCronCommand("foo_func_for_test", "*/5 * * * * *", demo.FooCommand, 2*time.Second)
 }
