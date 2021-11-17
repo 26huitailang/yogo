@@ -3,6 +3,7 @@ package contract
 const AppKey = "yogo:app"
 
 type App interface {
+	AppID() string
 	Version() string
 	BaseFolder() string
 	ConfigFolder() string
