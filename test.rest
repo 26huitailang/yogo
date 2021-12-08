@@ -1,8 +1,8 @@
 ###
-http://localhost:8888/user/login
+http://localhost:8080/user/login
 
 ###
-http://localhost:8888/subject/1
+http://localhost:8080/subject/1
 
 ###
-http://localhost:8888/subject/list/all
+http://localhost:8080/subject/list/all
