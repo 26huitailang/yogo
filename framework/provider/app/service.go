@@ -12,6 +12,8 @@ type YogoApp struct {
 	appId      string
 	container  framework.Container
 	baseFolder string
+
+	configMap map[string]string
 }
 
 func NewYogoApp(params ...interface{}) (interface{}, error) {
@@ -76,4 +78,8 @@ func (y YogoApp) RuntimeFolder() string {
 
 func (y YogoApp) LogFolder() string {
 	return filepath.Join(y.StorageFolder(), "log")
+}
+
+func (y *YogoApp) LoadAppConfig(kv map[string]string) {
+	y.configMap = kv
 }
