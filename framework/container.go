@@ -40,10 +40,9 @@ func NewYogoContainer() *YogoContainer {
 
 func (c *YogoContainer) Bind(provider ServiceProvider) error {
 	c.lock.Lock()
-	defer c.lock.Unlock()
-
 	key := provider.Name()
 	c.providers[key] = provider
+	c.lock.Unlock()
 
 	if !provider.IsDefer() {
 		if err := provider.Boot(c); err != nil {
