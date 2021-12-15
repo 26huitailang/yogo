@@ -1,7 +1,7 @@
-mysql:
+postgres:
     hostname: 127.0.0.1
-    username: yejianfeng
-    password:  env(DB_PASSWORD)
+    username: postgres
+    password: env(DB_PASSWORD)
     timeout: 1
     readtime: 2.3
 
