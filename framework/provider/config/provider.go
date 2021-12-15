@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/26huitailang/yogo/framework"
 	"github.com/26huitailang/yogo/framework/contract"
+	"path/filepath"
 )
 
 type YogoConfigProvider struct {
@@ -20,10 +21,6 @@ func (provider *YogoConfigProvider) Register(c framework.Container) framework.Ne
 
 // Boot will called when the service instantiate
 func (provider *YogoConfigProvider) Boot(c framework.Container) error {
-	provider.folder = c.MustMake(contract.AppKey).(contract.App).ConfigFolder()
-	provider.envMaps = c.MustMake(contract.EnvKey).(contract.Env).All()
-	provider.env = c.MustMake(contract.EnvKey).(contract.Env).AppEnv()
-	provider.c = c
 	return nil
 }
 
@@ -34,7 +31,13 @@ func (provider *YogoConfigProvider) IsDefer() bool {
 
 // Params define the necessary params for NewInstance
 func (provider *YogoConfigProvider) Params(c framework.Container) []interface{} {
-	return []interface{}{provider.folder, provider.envMaps, provider.env, provider.c}
+	appService := c.MustMake(contract.AppKey).(contract.App)
+	envService := c.MustMake(contract.EnvKey).(contract.Env)
+	env := envService.AppEnv()
+	// 配置文件夹地址
+	configFolder := appService.ConfigFolder()
+	envFolder := filepath.Join(configFolder, env)
+	return []interface{}{c, envFolder, envService.All()}
 }
 
 /// Name define the name for this service
