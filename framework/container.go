@@ -59,6 +59,10 @@ func (c *YogoContainer) Bind(provider ServiceProvider) error {
 	return nil
 }
 
+func (c *YogoContainer) IsBind(key string) bool {
+	return c.findServiceProvider(key) != nil
+}
+
 // Make 方式调用内部的 make实现
 func (c *YogoContainer) Make(key string) (interface{}, error) {
 	return c.make(key, nil, false)

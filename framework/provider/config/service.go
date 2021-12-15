@@ -90,6 +90,7 @@ func NewYogoConfig(params ...interface{}) (interface{}, error) {
 	envMaps := params[2].(map[string]string)
 
 	// 检查文件夹是否存在
+	fmt.Println("envFolder", envFolder)
 	if _, err := os.Stat(envFolder); os.IsNotExist(err) {
 		return nil, errors.New("folder " + envFolder + " not exist: " + err.Error())
 	}
@@ -144,6 +145,7 @@ func NewYogoConfig(params ...interface{}) (interface{}, error) {
 					// Write 写入
 					// Remove 删除
 					path, _ := filepath.Abs(ev.Name)
+					fmt.Println(path)
 					index := strings.LastIndex(path, string(os.PathSeparator))
 					folder := path[:index]
 					fileName := path[index+1:]

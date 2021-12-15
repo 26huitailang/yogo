@@ -2,6 +2,7 @@ package app
 
 import (
 	"errors"
+	"flag"
 	"github.com/26huitailang/yogo/framework"
 	"github.com/26huitailang/yogo/framework/util"
 	"github.com/google/uuid"
@@ -22,8 +23,14 @@ func NewYogoApp(params ...interface{}) (interface{}, error) {
 	}
 	container := params[0].(framework.Container)
 	baseFolder := params[1].(string)
+
+	if baseFolder == "" {
+		flag.StringVar(&baseFolder, "base", "", "base folder, default pwd")
+		flag.Parse()
+	}
 	appId := uuid.New().String()
-	return &YogoApp{appId: appId, baseFolder: baseFolder, container: container}, nil
+	configMap := map[string]string{}
+	return &YogoApp{appId: appId, baseFolder: baseFolder, container: container, configMap: configMap}, nil
 }
 
 func (y YogoApp) Version() string {

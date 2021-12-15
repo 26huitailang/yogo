@@ -1,4 +1,4 @@
-postgres:
+mysql:
     hostname: 127.0.0.1
     username: postgres
     password: env(DB_PASSWORD)

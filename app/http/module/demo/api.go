@@ -2,6 +2,7 @@ package demo
 
 import (
 	demoService "github.com/26huitailang/yogo/app/provider/demo"
+	"github.com/26huitailang/yogo/framework/contract"
 	"github.com/26huitailang/yogo/framework/gin"
 )
 
@@ -32,14 +33,12 @@ func NewDemoApi() *DemoApi {
 // @Success 200 array []UserDTO
 // @Router /demo/demo [get]
 func (api *DemoApi) Demo(c *gin.Context) {
-	//appService := c.MustMake(contract.AppKey).(contract.App)
-	//baseFolder := appService.BaseFolder()
-	users := api.service.GetUsers()
-	usersDTO := UserModelsToUserDTOs(users)
-	c.JSON(200, usersDTO)
+	configService := c.MustMake(contract.ConfigKey).(contract.Config)
+	password := configService.GetString("database.mysql.password")
+	c.JSON(200, password)
 }
 
-// Demo godoc
+// Demo2 godoc
 // @Summary 获取所有学生
 // @Description 获取所有学生
 // @Produce  json
