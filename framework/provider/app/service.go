@@ -77,9 +77,14 @@ func (y YogoApp) RuntimeFolder() string {
 }
 
 func (y YogoApp) LogFolder() string {
-	return filepath.Join(y.StorageFolder(), "log")
+	if val, ok := y.configMap["log_folder"]; ok {
+		return val
+	}
+	return filepath.Join(y.LogFolder(), "log")
 }
 
 func (y *YogoApp) LoadAppConfig(kv map[string]string) {
-	y.configMap = kv
+	for key, val := range kv {
+		y.configMap[key] = val
+	}
 }
