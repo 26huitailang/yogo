@@ -138,8 +138,12 @@ func NewYogoConfig(params ...interface{}) (interface{}, error) {
 
 		for {
 			select {
-			case ev := <-watch.Events:
+			case ev, ok := <-watch.Events:
 				{
+					if !ok {
+						fmt.Println("no event")
+						return
+					}
 					//判断事件发生的类型
 					// Create 创建
 					// Write 写入
@@ -163,8 +167,13 @@ func NewYogoConfig(params ...interface{}) (interface{}, error) {
 						hadeConf.removeConfigFile(folder, fileName)
 					}
 				}
-			case err := <-watch.Errors:
+			case err, ok := <-watch.Errors:
 				{
+					if !ok {
+						fmt.Println("no event")
+						return
+					}
+
 					log.Println("error : ", err)
 					return
 				}
