@@ -1,12 +1,14 @@
 package util
 
-import "fmt"
+import (
+	"fmt"
+)
 
+// PrettyPrint 美观输出数组
 func PrettyPrint(arr [][]string) {
 	if len(arr) == 0 {
 		return
 	}
-
 	rows := len(arr)
 	cols := len(arr[0])
 
@@ -24,6 +26,9 @@ func PrettyPrint(arr [][]string) {
 			if colMaxs[j] < lens[i][j] {
 				colMaxs[j] = lens[i][j]
 			}
+		}
+		if colMaxs[j] > 120 {
+			colMaxs[j] = 120
 		}
 	}
 
