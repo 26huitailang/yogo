@@ -6,6 +6,7 @@ import "github.com/26huitailang/yogo/framework/cobra"
 func AddKernelCommands(root *cobra.Command) {
 	root.AddCommand(initNewCommand())
 	root.AddCommand(initEnvCommand())
+	root.AddCommand(initBuildCommand())
 	root.AddCommand(DemoCommand)
 	root.AddCommand(initAppCommand())
 	root.AddCommand(initCronCommand())
