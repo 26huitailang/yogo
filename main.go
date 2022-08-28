@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/26huitailang/yogo/app/console"
 	"github.com/26huitailang/yogo/app/http"
+	"github.com/26huitailang/yogo/app/provider/demo"
 	"github.com/26huitailang/yogo/framework"
 	"github.com/26huitailang/yogo/framework/provider/app"
 	"github.com/26huitailang/yogo/framework/provider/config"
@@ -18,6 +19,7 @@ func main() {
 	container.Bind(&distributed.LocalDistributedProvider{})
 	container.Bind(&env.YogoEnvProvider{})
 	container.Bind(&config.YogoConfigProvider{})
+	container.Bind(&demo.DemoServiceProvider{})
 
 	if engine, err := http.NewHttpEngine(); err == nil {
 		container.Bind(&kernel.YogoKernelProvider{HttpEngine: engine})

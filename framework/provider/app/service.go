@@ -3,10 +3,11 @@ package app
 import (
 	"errors"
 	"flag"
+	"path/filepath"
+
 	"github.com/26huitailang/yogo/framework"
 	"github.com/26huitailang/yogo/framework/util"
 	"github.com/google/uuid"
-	"path/filepath"
 )
 
 type YogoApp struct {
@@ -94,4 +95,20 @@ func (y *YogoApp) LoadAppConfig(kv map[string]string) {
 	for key, val := range kv {
 		y.configMap[key] = val
 	}
+}
+
+// AppFolder 代表app目录
+func (app *YogoApp) AppFolder() string {
+	if val, ok := app.configMap["app_folder"]; ok {
+		return val
+	}
+	return filepath.Join(app.BaseFolder(), "app")
+}
+
+// DeployFolder 定义测试需要的信息
+func (app *YogoApp) DeployFolder() string {
+	if val, ok := app.configMap["deploy_folder"]; ok {
+		return val
+	}
+	return filepath.Join(app.BaseFolder(), "deploy")
 }

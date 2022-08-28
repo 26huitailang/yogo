@@ -2,18 +2,24 @@ package command
 
 import (
 	"context"
-	"github.com/26huitailang/yogo/framework/cobra"
-	"github.com/26huitailang/yogo/framework/contract"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/26huitailang/yogo/framework/cobra"
+	"github.com/26huitailang/yogo/framework/contract"
 )
+
+var appAddress = ""
+var appDaemon = false
 
 // initAppCommand 初始化app命令和其子命令
 func initAppCommand() *cobra.Command {
+	appStartCommand.Flags().BoolVarP(&appDaemon, "daemon", "d", false, "后台开启应用")
+	appStartCommand.Flags().StringVar(&appAddress, "address", "", "设置app启动地址，默认：8888")
 	appCommand.AddCommand(appStartCommand)
 	return appCommand
 }
@@ -43,9 +49,22 @@ var appStartCommand = &cobra.Command{
 		core := kernelService.HttpEngine()
 
 		// 创建一个Server服务
+		if appAddress == "" {
+			envService := container.MustMake(contract.EnvKey).(contract.Env)
+			if envService.Get("ADDRESS") != "" {
+				appAddress = envService.Get("ADDRESS")
+			} else {
+				configService := container.MustMake(contract.ConfigKey).(contract.Config)
+				if configService.IsExist("app.address") {
+					appAddress = configService.GetString("app.address")
+				} else {
+					appAddress = ":8888"
+				}
+			}
+		}
 		server := &http.Server{
 			Handler: core,
-			Addr:    ":8888",
+			Addr:    appAddress,
 		}
 
 		// 这个goroutine是启动服务的goroutine
