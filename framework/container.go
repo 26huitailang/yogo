@@ -80,6 +80,15 @@ func (c *YogoContainer) MakeNew(key string, params []interface{}) (interface{}, 
 	return c.make(key, params, true)
 }
 
+func (c *YogoContainer) NameList() []string {
+	ret := []string{}
+	for _, provider := range c.providers {
+		name := provider.Name()
+		ret = append(ret, name)
+	}
+	return ret
+}
+
 func (c *YogoContainer) make(key string, params []interface{}, forceNew bool) (interface{}, error) {
 	c.lock.RLock()
 	defer c.lock.RUnlock()

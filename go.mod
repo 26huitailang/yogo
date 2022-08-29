@@ -13,6 +13,7 @@ require (
 	github.com/google/go-github/v39 v39.2.0 // indirect
 	github.com/google/uuid v1.3.0
 	github.com/inconshreveable/mousetrap v1.0.0
+	github.com/jianfengye/collection v1.4.2
 	github.com/json-iterator/go v1.1.11
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect
 	github.com/mattn/go-isatty v0.0.12
