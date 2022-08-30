@@ -1,11 +1,12 @@
 package console
 
 import (
+	"time"
+
 	"github.com/26huitailang/yogo/app/console/command/demo"
 	"github.com/26huitailang/yogo/framework"
 	"github.com/26huitailang/yogo/framework/cobra"
 	"github.com/26huitailang/yogo/framework/command"
-	"time"
 )
 
 func RunCommand(container framework.Container) error {
@@ -27,4 +28,5 @@ func RunCommand(container framework.Container) error {
 
 func AddAppCommand(rootCmd *cobra.Command) {
 	rootCmd.AddDistributedCronCommand("foo_func_for_test", "*/5 * * * * *", demo.FooCommand, 2*time.Second)
+	rootCmd.AddCommand(demo.FooCommand)
 }

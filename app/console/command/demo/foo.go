@@ -1,8 +1,9 @@
 package demo
 
 import (
-	"github.com/26huitailang/yogo/framework/cobra"
 	"log"
+
+	"github.com/26huitailang/yogo/framework/cobra"
 )
 
 // FooCommand 代表Foo命令

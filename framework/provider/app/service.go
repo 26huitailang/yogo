@@ -54,8 +54,18 @@ func (y YogoApp) MiddlewareFolder() string {
 	return filepath.Join(y.BaseFolder(), "middleware")
 }
 
+func (y YogoApp) ConsoleFolder() string {
+	if val, ok := y.configMap["console_folder"]; ok {
+		return val
+	}
+	return filepath.Join(y.BaseFolder(), "app", "console")
+}
+
 func (y YogoApp) CommandFolder() string {
-	return filepath.Join(y.BaseFolder(), "command")
+	if val, ok := y.configMap["command_folder"]; ok {
+		return val
+	}
+	return filepath.Join(y.ConsoleFolder(), "command")
 }
 
 func (y YogoApp) TestFolder() string {
@@ -66,12 +76,6 @@ func (y YogoApp) BaseFolder() string {
 	if y.baseFolder != "" {
 		return y.baseFolder
 	}
-	//var baseFolder string
-	//flag.StringVar(&baseFolder, "base_folder", "", "base_folder param, default current path")
-	//flag.Parsed()
-	//if baseFolder != "" {
-	//	return baseFolder
-	//}
 
 	return util.GetExecDirectory()
 }
