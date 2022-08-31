@@ -50,8 +50,18 @@ func (y YogoApp) ProviderFolder() string {
 	return filepath.Join(y.BaseFolder(), "app")
 }
 
+func (y YogoApp) HttpFolder() string {
+	if val, ok := y.configMap["http_folder"]; ok {
+		return val
+	}
+	return filepath.Join(y.AppFolder(), "http")
+}
+
 func (y YogoApp) MiddlewareFolder() string {
-	return filepath.Join(y.BaseFolder(), "middleware")
+	if val, ok := y.configMap["middleware_folder"]; ok {
+		return val
+	}
+	return filepath.Join(y.HttpFolder(), "middleware")
 }
 
 func (y YogoApp) ConsoleFolder() string {
