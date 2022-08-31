@@ -63,7 +63,8 @@ var middlewareListCommand = &cobra.Command{
 
 var middlewareMigrateCommand = &cobra.Command{
 	Use:   "migrate",
-	Short: "迁移gin-contrib中间件, 迁移地址: https://github.com/gin-contrib/[middleware].git",
+	Short: "迁移gin-contrib中间件",
+	Long:  "迁移gin-contrib中间件, 迁移地址: https://github.com/gin-contrib/[middleware].git",
 	RunE: func(c *cobra.Command, args []string) error {
 		container := c.GetContainer()
 		// 获取中间件名称

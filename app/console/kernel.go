@@ -28,5 +28,5 @@ func RunCommand(container framework.Container) error {
 
 func AddAppCommand(rootCmd *cobra.Command) {
 	rootCmd.AddDistributedCronCommand("foo_func_for_test", "*/5 * * * * *", demo.FooCommand, 2*time.Second)
-	rootCmd.AddCommand(demo.FooCommand)
+	rootCmd.AddCommand(demo.InitFooCommand())
 }
