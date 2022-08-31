@@ -40,17 +40,27 @@ var middlewareCommand = &cobra.Command{
 
 var middlewareListCommand = &cobra.Command{
 	Use:   "list",
-	Short: "列出所有业务中间件",
+	Short: "显示所有中间件",
 	RunE: func(c *cobra.Command, args []string) error {
-		cmds := c.Root().Commands()
-		info := [][]string{}
-		for _, line := range cmds {
-			info = append(info, []string{line.Name(), line.Short})
+		container := c.GetContainer()
+		appService := container.MustMake(contract.AppKey).(contract.App)
+
+		middlewarePath := path.Join(appService.BaseFolder(), "app", "http", "middleware")
+
+		// 读取文件夹
+		files, err := ioutil.ReadDir(middlewarePath)
+		if err != nil {
+			return err
 		}
-		util.PrettyPrint(info)
+		for _, f := range files {
+			if f.IsDir() {
+				fmt.Println(f.Name())
+			}
+		}
 		return nil
 	},
 }
+
 var middlewareMigrateCommand = &cobra.Command{
 	Use:   "migrate",
 	Short: "迁移gin-contrib中间件, 迁移地址: https://github.com/gin-contrib/[middleware].git",
