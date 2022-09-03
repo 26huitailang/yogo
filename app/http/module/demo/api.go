@@ -2,7 +2,6 @@ package demo
 
 import (
 	demoService "github.com/26huitailang/yogo/app/provider/demo"
-	"github.com/26huitailang/yogo/framework/contract"
 	"github.com/26huitailang/yogo/framework/gin"
 )
 
@@ -12,7 +11,7 @@ type DemoApi struct {
 
 func Register(r *gin.Engine) error {
 	api := NewDemoApi()
-	r.Bind(&demoService.DemoServiceProvider{})
+	r.Bind(&demoService.DemoProvider{})
 
 	r.GET("/demo/demo", api.Demo)
 	r.GET("/demo/demo2", api.Demo2)
@@ -33,17 +32,15 @@ func NewDemoApi() *DemoApi {
 // @Success 200 array []UserDTO
 // @Router /demo/demo [get]
 func (api *DemoApi) Demo(c *gin.Context) {
-	configService := c.MustMake(contract.ConfigKey).(contract.Config)
-	password := configService.GetString("database.mysql.password")
-	c.JSON(200, password)
+	c.JSON(200, "this is demo for dev all")
 }
 
-// Demo2 godoc
+// Demo2  for godoc
 // @Summary 获取所有学生
-// @Description 获取所有学生
+// @Description 获取所有学生,不进行分页
 // @Produce  json
 // @Tags demo
-// @Success 200 array []UserDTO
+// @Success 200 {array} UserDTO
 // @Router /demo/demo2 [get]
 func (api *DemoApi) Demo2(c *gin.Context) {
 	demoProvider := c.MustMake(demoService.DemoKey).(demoService.IService)

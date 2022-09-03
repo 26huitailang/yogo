@@ -14,4 +14,5 @@ func AddKernelCommands(root *cobra.Command) {
 	root.AddCommand(initProviderCommand())
 	root.AddCommand(initCmdCommand())
 	root.AddCommand(initMiddlewareCommand())
+	root.AddCommand(initSwaggerCommand())
 }

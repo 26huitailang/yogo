@@ -19,9 +19,9 @@ func main() {
 	container.Bind(&distributed.LocalDistributedProvider{})
 	container.Bind(&env.YogoEnvProvider{})
 	container.Bind(&config.YogoConfigProvider{})
-	container.Bind(&demo.DemoServiceProvider{})
+	container.Bind(&demo.DemoProvider{})
 
-	if engine, err := http.NewHttpEngine(); err == nil {
+	if engine, err := http.NewHttpEngine(container); err == nil {
 		container.Bind(&kernel.YogoKernelProvider{HttpEngine: engine})
 	}
 	console.RunCommand(container)

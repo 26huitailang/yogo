@@ -1,5 +1,5 @@
 url: http://127.0.0.1:8066
-swagger_open: true
+swagger: true
 dev_fresh: 1
 path:
   storage: "/home/peter/testdata/storage/"
