@@ -1,6 +1,9 @@
 package util
 
-import "os"
+import (
+	"os"
+	"syscall"
+)
 
 func GetExecDirectory() string {
 	file, err := os.Getwd()
@@ -8,4 +11,13 @@ func GetExecDirectory() string {
 		return file + "/"
 	}
 	return ""
+}
+
+func CheckProcessExist(pid int) bool {
+	p, err := os.FindProcess(pid)
+	if err != nil {
+		return false
+	}
+	err = p.Signal(syscall.Signal(0))
+	return err == nil
 }
