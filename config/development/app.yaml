@@ -1,11 +1,5 @@
 url: http://127.0.0.1:8066
 swagger: true
-dev_fresh: 1
-path:
-  storage: "/home/peter/testdata/storage/"
-  log: ""
-  pid: ""
-  cache: ""
 dev:
   port: 8087
   backend:

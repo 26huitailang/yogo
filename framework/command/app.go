@@ -2,15 +2,22 @@ package command
 
 import (
 	"context"
-	"log"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
+	"strconv"
 	"syscall"
 	"time"
 
+	"github.com/26huitailang/yogo/framework"
 	"github.com/26huitailang/yogo/framework/cobra"
 	"github.com/26huitailang/yogo/framework/contract"
+	"github.com/26huitailang/yogo/framework/util"
+	"github.com/erikdubbelboer/gspt"
+	"github.com/sevlyar/go-daemon"
 )
 
 var appAddress = ""
@@ -36,6 +43,29 @@ var appCommand = &cobra.Command{
 	},
 }
 
+func startAppServe(server *http.Server, c framework.Container) error {
+	go func() {
+		server.ListenAndServe()
+	}()
+
+	quit := make(chan os.Signal)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	<-quit
+
+	closeWait := 5
+	configService := c.MustMake(contract.ConfigKey).(contract.Config)
+	if configService.IsExist("app.close_wait") {
+		closeWait = configService.GetInt("app.close_wait")
+	}
+	timeoutCtx, cancel := context.WithTimeout(context.Background(), time.Duration(closeWait)*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(timeoutCtx); err != nil {
+		return err
+	}
+	return nil
+}
+
 // appStartCommand 启动一个Web服务
 var appStartCommand = &cobra.Command{
 	Use:   "start",
@@ -48,7 +78,6 @@ var appStartCommand = &cobra.Command{
 		// 从kernel服务实例中获取引擎
 		core := kernelService.HttpEngine()
 
-		// 创建一个Server服务
 		if appAddress == "" {
 			envService := container.MustMake(contract.EnvKey).(contract.Env)
 			if envService.Get("ADDRESS") != "" {
@@ -62,31 +91,68 @@ var appStartCommand = &cobra.Command{
 				}
 			}
 		}
+		// 创建一个Server服务
 		server := &http.Server{
 			Handler: core,
 			Addr:    appAddress,
 		}
-
-		// 这个goroutine是启动服务的goroutine
-		go func() {
-			server.ListenAndServe()
-		}()
-
-		// 当前的goroutine等待信号量
-		quit := make(chan os.Signal)
-		// 监控信号：SIGINT, SIGTERM, SIGQUIT
-		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-		// 这里会阻塞当前goroutine等待信号
-		<-quit
-
-		// 调用Server.Shutdown graceful结束
-		timeoutCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-
-		if err := server.Shutdown(timeoutCtx); err != nil {
-			log.Fatal("Server Shutdown:", err)
+		appService := container.MustMake(contract.AppKey).(contract.App)
+		pidFolder := appService.RuntimeFolder()
+		if !util.Exists(pidFolder) {
+			if err := os.MkdirAll(pidFolder, os.ModePerm); err != nil {
+				return err
+			}
+		}
+		serverPidFile := filepath.Join(pidFolder, "app.pid")
+		logFolder := appService.LogFolder()
+		if !util.Exists(logFolder) {
+			if err := os.MkdirAll(logFolder, os.ModePerm); err != nil {
+				return err
+			}
+		}
+		serverLogFile := filepath.Join(logFolder, "app.log")
+		currentFolder := util.GetExecDirectory()
+		if appDaemon {
+			cntxt := &daemon.Context{
+				PidFileName: serverPidFile,
+				PidFilePerm: 0664,
+				LogFileName: serverLogFile,
+				LogFilePerm: 0640,
+				WorkDir:     currentFolder,
+				Umask:       027,
+				Args:        []string{"", "app", "start", "--daemon=true"},
+			}
+			d, err := cntxt.Reborn()
+			if err != nil {
+				return err
+			}
+			if d != nil {
+				fmt.Println("app start successfully, pid:", d.Pid)
+				fmt.Println("log file:", serverLogFile)
+				return nil
+			}
+			defer cntxt.Release()
+			fmt.Println("daemon started")
+			if err := startAppServe(server, container); err != nil {
+				fmt.Println(err)
+			}
+			return nil
 		}
 
+		// 非daemon模式
+		println("hello")
+		content := strconv.Itoa(os.Getpid())
+		fmt.Println("[PID]", content)
+		err := ioutil.WriteFile(serverPidFile, []byte(content), 0644)
+		if err != nil {
+			return err
+		}
+		gspt.SetProcTitle("yogo app")
+
+		fmt.Println("app serve url:", appAddress)
+		if err := startAppServe(server, container); err != nil {
+			fmt.Println(err)
+		}
 		return nil
 	},
 }

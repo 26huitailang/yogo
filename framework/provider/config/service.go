@@ -3,7 +3,6 @@ package config
 import (
 	"bytes"
 	"fmt"
-	"github.com/fsnotify/fsnotify"
 	"io/ioutil"
 	"log"
 	"os"
@@ -11,6 +10,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/fsnotify/fsnotify"
 
 	"github.com/26huitailang/yogo/framework"
 	"github.com/26huitailang/yogo/framework/contract"
@@ -96,7 +97,7 @@ func NewYogoConfig(params ...interface{}) (interface{}, error) {
 	}
 
 	// 实例化
-	hadeConf := &YogoConfig{
+	yogoConf := &YogoConfig{
 		c:        container,
 		folder:   envFolder,
 		envMaps:  envMaps,
@@ -113,7 +114,7 @@ func NewYogoConfig(params ...interface{}) (interface{}, error) {
 	}
 	for _, file := range files {
 		fileName := file.Name()
-		err := hadeConf.loadConfigFile(envFolder, fileName)
+		err := yogoConf.loadConfigFile(envFolder, fileName)
 		if err != nil {
 			log.Println(err)
 			continue
@@ -156,15 +157,15 @@ func NewYogoConfig(params ...interface{}) (interface{}, error) {
 
 					if ev.Op&fsnotify.Create == fsnotify.Create {
 						log.Println("创建文件 : ", ev.Name)
-						hadeConf.loadConfigFile(folder, fileName)
+						yogoConf.loadConfigFile(folder, fileName)
 					}
 					if ev.Op&fsnotify.Write == fsnotify.Write {
 						log.Println("写入文件 : ", ev.Name)
-						hadeConf.loadConfigFile(folder, fileName)
+						yogoConf.loadConfigFile(folder, fileName)
 					}
 					if ev.Op&fsnotify.Remove == fsnotify.Remove {
 						log.Println("删除文件 : ", ev.Name)
-						hadeConf.removeConfigFile(folder, fileName)
+						yogoConf.removeConfigFile(folder, fileName)
 					}
 				}
 			case err, ok := <-watch.Errors:
@@ -181,7 +182,7 @@ func NewYogoConfig(params ...interface{}) (interface{}, error) {
 		}
 	}()
 
-	return hadeConf, nil
+	return yogoConf, nil
 }
 
 // replace 表示使用环境变量maps替换context中的env(xxx)的环境变量

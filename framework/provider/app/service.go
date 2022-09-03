@@ -102,7 +102,7 @@ func (y YogoApp) LogFolder() string {
 	if val, ok := y.configMap["log_folder"]; ok {
 		return val
 	}
-	return filepath.Join(y.LogFolder(), "log")
+	return filepath.Join(y.StorageFolder(), "log")
 }
 
 func (y *YogoApp) LoadAppConfig(kv map[string]string) {
