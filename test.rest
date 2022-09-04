@@ -1,2 +1,4 @@
 ###
 GET http://localhost:8888/demo/orm
+### test cache
+GET http://localhost:8888/demo/cache

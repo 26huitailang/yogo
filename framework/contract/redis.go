@@ -1,6 +1,11 @@
 package contract
 
-import "github.com/go-redis/redis/v8"
+import (
+	"fmt"
+
+	"github.com/26huitailang/yogo/framework"
+	"github.com/go-redis/redis/v8"
+)
 
 const RedisKey = "yogo:redis"
 
