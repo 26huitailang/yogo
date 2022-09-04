@@ -84,7 +84,7 @@ func (conf *YogoConfig) removeConfigFile(folder string, file string) error {
 	return nil
 }
 
-// NewHadeConfig 初始化Config方法
+// NewYogoConfig 初始化Config方法
 func NewYogoConfig(params ...interface{}) (interface{}, error) {
 	container := params[0].(framework.Container)
 	envFolder := params[1].(string)

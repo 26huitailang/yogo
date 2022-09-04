@@ -10,6 +10,8 @@ import (
 	"github.com/26huitailang/yogo/framework/provider/distributed"
 	"github.com/26huitailang/yogo/framework/provider/env"
 	"github.com/26huitailang/yogo/framework/provider/kernel"
+	"github.com/26huitailang/yogo/framework/provider/log"
+	"github.com/26huitailang/yogo/framework/provider/orm"
 )
 
 func main() {
@@ -19,6 +21,8 @@ func main() {
 	container.Bind(&distributed.LocalDistributedProvider{})
 	container.Bind(&env.YogoEnvProvider{})
 	container.Bind(&config.YogoConfigProvider{})
+	container.Bind(&log.YogoLogServiceProvider{})
+	container.Bind(&orm.GormProvider{})
 	container.Bind(&demo.DemoProvider{})
 
 	if engine, err := http.NewHttpEngine(container); err == nil {

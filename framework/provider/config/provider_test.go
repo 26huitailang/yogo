@@ -13,7 +13,7 @@ import (
 )
 
 func TestYogoConfig_Normal(t *testing.T) {
-	Convey("test hade config normal case", t, func() {
+	Convey("test yogo config normal case", t, func() {
 		basePath := tests.BasePath
 		c := framework.NewYogoContainer()
 		c.Bind(&app.YogoAppProvider{BaseFolder: basePath})
