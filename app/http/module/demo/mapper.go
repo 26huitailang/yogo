@@ -4,11 +4,11 @@ import (
 	demoService "github.com/26huitailang/yogo/app/provider/demo"
 )
 
-func UserModelsToUserDTOs(models []UserModel) []UserDTO {
+func UserModelsToUserDTOs(models []User) []UserDTO {
 	ret := []UserDTO{}
 	for _, model := range models {
 		t := UserDTO{
-			ID:   model.UserId,
+			ID:   int(model.ID),
 			Name: model.Name,
 		}
 		ret = append(ret, t)
