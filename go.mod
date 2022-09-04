@@ -12,6 +12,7 @@ require (
 	github.com/go-openapi/spec v0.20.7 // indirect
 	github.com/go-openapi/swag v0.22.3 // indirect
 	github.com/go-playground/validator/v10 v10.11.0
+	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/golang/protobuf v1.5.2
 	github.com/google/go-github/v39 v39.2.0
@@ -28,7 +29,6 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/robfig/cron/v3 v3.0.0
-	github.com/rs/xid v1.2.1
 	github.com/sevlyar/go-daemon v0.1.5
 	github.com/smartystreets/goconvey v1.6.4
 	github.com/spf13/cast v1.4.1
