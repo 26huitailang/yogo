@@ -1,0 +1,15 @@
+timeout: 1s
+network: tcp
+web-01:
+  network: tcp
+  host: 162.14.119.4 # ip地址
+  port: 22 # 端口
+  username: lighthouse # 用户名
+  rsa_key: "/Users/26huitailang/.ssh/id_rsa"
+  known_hosts: "/Users/26huitailang/.ssh/known_hosts"
+web-02:
+  host: 11.11.11.11 # ip地址
+  port: 22 # 端口
+  username: root # 用户名
+  password: "123123" # 密码
+

@@ -14,6 +14,7 @@ import (
 	"github.com/26huitailang/yogo/framework/provider/log"
 	"github.com/26huitailang/yogo/framework/provider/orm"
 	"github.com/26huitailang/yogo/framework/provider/redis"
+	"github.com/26huitailang/yogo/framework/provider/ssh"
 )
 
 func main() {
@@ -27,6 +28,7 @@ func main() {
 	container.Bind(&orm.GormProvider{})
 	container.Bind(&redis.RedisProvider{})
 	container.Bind(&cache.YogoCacheProvider{})
+	container.Bind(&ssh.SSHProvider{})
 	container.Bind(&demo.DemoProvider{})
 
 	if engine, err := http.NewHttpEngine(container); err == nil {
