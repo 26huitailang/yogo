@@ -183,7 +183,7 @@ func deployBuildBackend(c *cobra.Command, deployFolder string) error {
 		image := configService.GetString("deploy.backend.image")
 		dcmd := fmt.Sprintf("run --rm -v %s:/code %s bash -c", filepath.Dir(appService.BaseFolder()), image)
 		dcmds, _ := shlex.Split(dcmd)
-		dcmds = append(dcmds, fmt.Sprintf("ls /code && ls /code/deploy && cd /code && %s", cmd.String()))
+		dcmds = append(dcmds, fmt.Sprintf("ls /code && cd /code && %s", cmd.String()))
 		dockerPath, _ := exec.LookPath("docker")
 		cmd = exec.Command(dockerPath, dcmds...)
 	}
