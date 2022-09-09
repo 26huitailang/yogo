@@ -107,6 +107,12 @@ func NewYogoConfig(params ...interface{}) (interface{}, error) {
 		lock:     sync.RWMutex{},
 	}
 
+	// 检查文件夹是否存在
+	if _, err := os.Stat(envFolder); os.IsNotExist(err) {
+		// 这里修改成为不返回错误，是让new方法可以通过
+		return yogoConf, nil
+	}
+
 	// 读取每个文件
 	files, err := ioutil.ReadDir(envFolder)
 	if err != nil {
