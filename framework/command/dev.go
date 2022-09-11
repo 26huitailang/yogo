@@ -201,7 +201,7 @@ func (p *Proxy) restartFrontend() error {
 	if err != nil {
 		return err
 	}
-	cmd := exec.Command(path, "serve")
+	cmd := exec.Command(path, "dev")
 	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, fmt.Sprintf("%s%s", "PORT=", port))
 	cmd.Stdout = os.NewFile(0, os.DevNull)
