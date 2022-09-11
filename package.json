@@ -3,15 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "lint": "vue-cli-service lint",
     "docs:dev": "vuepress dev docs --clean-cache",
     "docs:build": "vuepress build docs"
   },
   "dependencies": {
     "core-js": "^3.8.3",
-    "vue": "^3.2.13"
+    "element-plus": "^2.2.16",
+    "vue": "^3.2.27"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",
@@ -21,7 +23,11 @@
     "@vue/cli-service": "~5.0.0",
     "eslint": "^7.32.0",
     "eslint-plugin-vue": "^8.0.3",
-    "vuepress": "^2.0.0-beta.51"
+    "unplugin-auto-import": "^0.11.2",
+    "unplugin-vue-components": "^0.22.4",
+    "vite": "^3.1.0",
+    "vuepress": "^2.0.0-beta.51",
+    "@vitejs/plugin-vue": "^3.1.0"
   },
   "eslintConfig": {
     "root": true,
