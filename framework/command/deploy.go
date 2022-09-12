@@ -147,6 +147,9 @@ func deployBuildBackend(c *cobra.Command, deployFolder string) error {
 
 	// 组装命令
 	binFile := "yogo"
+	if configService.GetString("deploy.backend.bin") != "" {
+		binFile = configService.GetString("deploy.backend.bin")
+	}
 	useDocker := configService.GetBool("deploy.backend.use_docker")
 
 	path := "/usr/local/go/bin/go"
@@ -290,7 +293,9 @@ func deployUploadAction(deployFolder string, container framework.Container, end 
 
 		if err := uploadFolderToSFTP(container, deployFolder, remoteFolder, client); err != nil {
 			logger.Info(context.Background(), "upload folder failed", map[string]interface{}{
-				"err": err,
+				"remoteFolder": remoteFolder,
+				"deployFolder": deployFolder,
+				"err":          err,
 			})
 			return err
 		}

@@ -127,7 +127,7 @@ var cmdCreateCommand = &cobra.Command{
 				return errors.Cause(err)
 			}
 		}
-		fmt.Println("创建控制台命令工具陈工, 路径:", filepath.Join(pFolder, folder))
+		fmt.Println("创建控制台命令工具成功, 路径:", filepath.Join(pFolder, folder))
 		fmt.Println("请记得开发完成后将命令行工具挂载到 console/kernel.go")
 		return nil
 	},
