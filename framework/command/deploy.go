@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -26,6 +27,7 @@ func initDeployCommand() *cobra.Command {
 	deployCommand.AddCommand(deployBackendCommand)
 	deployCommand.AddCommand(deployAllCommand)
 	deployCommand.AddCommand(deployRollbackCommand)
+	deployCommand.AddCommand(deployCleanCommand)
 	return deployCommand
 }
 
@@ -133,6 +135,38 @@ var deployRollbackCommand = &cobra.Command{
 
 		// 上传部署文件夹并执行对应的shell
 		return deployUploadAction(deployFolder, container, end)
+	},
+}
+
+// deployFrontendCommand 部署前端
+var deployCleanCommand = &cobra.Command{
+	Use:   "clean",
+	Short: "清理deploy文件夹下的历史文件",
+	RunE: func(c *cobra.Command, args []string) error {
+		container := c.GetContainer()
+		appService := container.MustMake(contract.AppKey).(contract.App)
+		deployFolder := appService.DeployFolder()
+		if !util.Exists(deployFolder) {
+			return errors.New(fmt.Sprintf("folder not exists: %s", deployFolder))
+		}
+		files, err := os.ReadDir(deployFolder)
+		if err != nil {
+			return err
+		}
+		for _, f := range files {
+			if !f.IsDir() {
+				continue
+			}
+			if err != nil {
+				return err
+			}
+			path2Del := path.Join(deployFolder, f.Name())
+			if err = os.RemoveAll(path2Del); err != nil {
+				return err
+			}
+			fmt.Println("deleted deploy version:", f.Name())
+		}
+		return nil
 	},
 }
 
