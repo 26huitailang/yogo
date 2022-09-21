@@ -144,7 +144,6 @@ var appStartCommand = &cobra.Command{
 		}
 
 		// 非daemon模式
-		println("hello")
 		content := strconv.Itoa(os.Getpid())
 		fmt.Println("[PID]", content)
 		err := ioutil.WriteFile(serverPidFile, []byte(content), 0644)
