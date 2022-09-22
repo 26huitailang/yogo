@@ -20,6 +20,8 @@ type App interface {
 	MiddlewareFolder() string
 	// CommandFolder 定义业务定义的命令
 	CommandFolder() string
+	// StorageFolder 定义业务存储数据的位置
+	StorageFolder() string
 	// RuntimeFolder 定义业务的运行中间态信息
 	RuntimeFolder() string
 	// TestFolder 存放测试所需要的信息
