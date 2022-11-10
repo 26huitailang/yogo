@@ -3,7 +3,7 @@ run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
 on: [push]
 jobs:
   go-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
@@ -23,3 +23,11 @@ jobs:
 
       - name: Test
         run: go test -v ./...
+
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: binary file
+          path: |
+            yogo
+            config
