@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	BasePath = "/Users/26huitailang/GolangProjects/yogo-demo/"
+	BasePath = "/Users/26huitailang/GolandProjects/yogo/"
 )
 
 func InitBaseContainer() framework.Container {

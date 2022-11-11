@@ -298,5 +298,9 @@ func (conf *YogoConfig) GetStringMapStringSlice(key string) map[string][]string 
 
 // Load a config to a struct, val should be an pointer
 func (conf *YogoConfig) Load(key string, val interface{}) error {
-	return mapstructure.Decode(conf.find(key), val)
+	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{Result: val, TagName: "yaml"})
+	if err != nil {
+		return err
+	}
+	return decoder.Decode(conf.find(key))
 }
