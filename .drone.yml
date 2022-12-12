@@ -6,6 +6,7 @@ steps:
 - name: build
   image: golang:1.19
   commands:
+  - ls
   - go build
 - name: test
   image: golang:1.19
