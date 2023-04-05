@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -26,6 +27,7 @@ func initDeployCommand() *cobra.Command {
 	deployCommand.AddCommand(deployBackendCommand)
 	deployCommand.AddCommand(deployAllCommand)
 	deployCommand.AddCommand(deployRollbackCommand)
+	deployCommand.AddCommand(deployCleanCommand)
 	return deployCommand
 }
 
@@ -136,6 +138,38 @@ var deployRollbackCommand = &cobra.Command{
 	},
 }
 
+// deployFrontendCommand 部署前端
+var deployCleanCommand = &cobra.Command{
+	Use:   "clean",
+	Short: "清理deploy文件夹下的历史文件",
+	RunE: func(c *cobra.Command, args []string) error {
+		container := c.GetContainer()
+		appService := container.MustMake(contract.AppKey).(contract.App)
+		deployFolder := appService.DeployFolder()
+		if !util.Exists(deployFolder) {
+			return errors.New(fmt.Sprintf("folder not exists: %s", deployFolder))
+		}
+		files, err := os.ReadDir(deployFolder)
+		if err != nil {
+			return err
+		}
+		for _, f := range files {
+			if !f.IsDir() {
+				continue
+			}
+			if err != nil {
+				return err
+			}
+			path2Del := path.Join(deployFolder, f.Name())
+			if err = os.RemoveAll(path2Del); err != nil {
+				return err
+			}
+			fmt.Println("deleted deploy version:", f.Name())
+		}
+		return nil
+	},
+}
+
 func deployBuildBackend(c *cobra.Command, deployFolder string) error {
 	container := c.GetContainer()
 	configService := container.MustMake(contract.ConfigKey).(contract.Config)
@@ -147,6 +181,9 @@ func deployBuildBackend(c *cobra.Command, deployFolder string) error {
 
 	// 组装命令
 	binFile := "yogo"
+	if configService.GetString("deploy.backend.bin") != "" {
+		binFile = configService.GetString("deploy.backend.bin")
+	}
 	useDocker := configService.GetBool("deploy.backend.use_docker")
 
 	path := "/usr/local/go/bin/go"
@@ -290,7 +327,9 @@ func deployUploadAction(deployFolder string, container framework.Container, end 
 
 		if err := uploadFolderToSFTP(container, deployFolder, remoteFolder, client); err != nil {
 			logger.Info(context.Background(), "upload folder failed", map[string]interface{}{
-				"err": err,
+				"remoteFolder": remoteFolder,
+				"deployFolder": deployFolder,
+				"err":          err,
 			})
 			return err
 		}

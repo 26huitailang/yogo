@@ -3,6 +3,7 @@ package app
 import (
 	"errors"
 	"flag"
+	"os"
 	"path/filepath"
 
 	"github.com/26huitailang/yogo/framework"
@@ -25,17 +26,19 @@ func NewYogoApp(params ...interface{}) (interface{}, error) {
 	container := params[0].(framework.Container)
 	baseFolder := params[1].(string)
 
+	// baseFolder from --base option
 	if baseFolder == "" {
 		flag.StringVar(&baseFolder, "base", "", "base folder, default pwd")
 		flag.Parse()
 	}
+	// baseFolder from default userHomeDir <USERHOME>/.config/yogo folder
 	appId := uuid.New().String()
 	configMap := map[string]string{}
 	return &YogoApp{appId: appId, baseFolder: baseFolder, container: container, configMap: configMap}, nil
 }
 
 func (y YogoApp) Version() string {
-	return "0.0.1"
+	return "0.2.0"
 }
 
 func (y *YogoApp) AppID() string {
@@ -109,6 +112,15 @@ func (y *YogoApp) LoadAppConfig(kv map[string]string) {
 	for key, val := range kv {
 		y.configMap[key] = val
 	}
+}
+
+func (y *YogoApp) UserHomeFolder() string {
+	userHomeDir, _ := os.UserHomeDir()
+	return userHomeDir
+}
+
+func (y *YogoApp) UserHomeConfigFolder() string {
+	return y.UserHomeFolder() + "/.config"
 }
 
 // AppFolder 代表app目录

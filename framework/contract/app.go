@@ -20,6 +20,8 @@ type App interface {
 	MiddlewareFolder() string
 	// CommandFolder 定义业务定义的命令
 	CommandFolder() string
+	// StorageFolder 定义业务存储数据的位置
+	StorageFolder() string
 	// RuntimeFolder 定义业务的运行中间态信息
 	RuntimeFolder() string
 	// TestFolder 存放测试所需要的信息
@@ -31,4 +33,8 @@ type App interface {
 	AppFolder() string
 	// LoadAppConfig 加载新的AppConfig，key为对应的函数转为小写下划线，比如ConfigFolder => config_folder
 	LoadAppConfig(kv map[string]string)
+	// user home dir linux ~ windows $HOME
+	UserHomeFolder() string
+	// user home dir config ~/.config
+	UserHomeConfigFolder() string
 }

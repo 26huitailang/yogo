@@ -26,12 +26,13 @@ var appDaemon = false
 
 // initAppCommand 初始化app命令和其子命令
 func initAppCommand() *cobra.Command {
-	appStartCommand.Flags().BoolVarP(&appDaemon, "daemon", "d", false, "后台开启应用")
-	appStartCommand.Flags().StringVar(&appAddress, "address", "", "设置app启动地址，默认：8888")
+	appStartCommand.Flags().BoolVarP(&appDaemon, "daemon", "d", false, "start app daemon")
+	appStartCommand.Flags().StringVar(&appAddress, "address", "", "set app address, default: 8888")
 	appCommand.AddCommand(appStartCommand)
 	appCommand.AddCommand(appStateCommand)
 	appCommand.AddCommand(appStopCommand)
 	appCommand.AddCommand(appRestartCommand)
+	appCommand.AddCommand(appVersionCommand)
 	return appCommand
 }
 
@@ -144,7 +145,6 @@ var appStartCommand = &cobra.Command{
 		}
 
 		// 非daemon模式
-		println("hello")
 		content := strconv.Itoa(os.Getpid())
 		fmt.Println("[PID]", content)
 		err := ioutil.WriteFile(serverPidFile, []byte(content), 0644)
@@ -256,6 +256,17 @@ var appStopCommand = &cobra.Command{
 			}
 			fmt.Println("Stopped the app service, pid:", pid)
 		}
+		return nil
+	},
+}
+
+var appVersionCommand = &cobra.Command{
+	Use:   "version",
+	Short: "yogo app version",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		container := cmd.GetContainer()
+		appService := container.MustMake(contract.AppKey).(contract.App)
+		fmt.Println(appService.Version())
 		return nil
 	},
 }
