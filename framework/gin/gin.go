@@ -6,6 +6,7 @@ package gin
 
 import (
 	"fmt"
+	"github.com/26huitailang/yogo/framework"
 	"html/template"
 	"net"
 	"net/http"
@@ -168,6 +169,7 @@ type Engine struct {
 	maxSections      uint16
 	trustedProxies   []string
 	trustedCIDRs     []*net.IPNet
+	container        framework.Container
 }
 
 var _ IRouter = (*Engine)(nil)
