@@ -9,18 +9,38 @@ import (
 	"testing"
 )
 
-func TestSliceValidateError(t *testing.T) {
+func TestSliceValidationError(t *testing.T) {
 	tests := []struct {
 		name string
-		err  sliceValidateError
+		err  SliceValidationError
 		want string
 	}{
-		{"has nil elements", sliceValidateError{errors.New("test error"), nil}, "[0]: test error"},
+		{"has nil elements", SliceValidationError{errors.New("test error"), nil}, "[0]: test error"},
+		{"has zero elements", SliceValidationError{}, ""},
+		{"has one element", SliceValidationError{errors.New("test one error")}, "[0]: test one error"},
+		{"has two elements",
+			SliceValidationError{
+				errors.New("first error"),
+				errors.New("second error"),
+			},
+			"[0]: first error\n[1]: second error",
+		},
+		{"has many elements",
+			SliceValidationError{
+				errors.New("first error"),
+				errors.New("second error"),
+				nil,
+				nil,
+				nil,
+				errors.New("last error"),
+			},
+			"[0]: first error\n[1]: second error\n[5]: last error",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.err.Error(); got != tt.want {
-				t.Errorf("sliceValidateError.Error() = %v, want %v", got, tt.want)
+				t.Errorf("SliceValidationError.Error() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -34,7 +54,7 @@ func TestDefaultValidator(t *testing.T) {
 	tests := []struct {
 		name    string
 		v       *defaultValidator
-		obj     interface{}
+		obj     any
 		wantErr bool
 	}{
 		{"validate nil obj", &defaultValidator{}, nil, false},

@@ -1,4 +1,4 @@
-// Copyright 2014 Manu Martinez-Almeida.  All rights reserved.
+// Copyright 2014 Manu Martinez-Almeida. All rights reserved.
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 
@@ -8,7 +8,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"html/template"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/net/http2"
 )
 
 func formatAsDate(t time.Time) string {
@@ -42,7 +43,7 @@ func setupHTMLFiles(t *testing.T, mode string, tls bool, loadMethod func(*Engine
 			c.HTML(http.StatusOK, "hello.tmpl", map[string]string{"name": "world"})
 		})
 		router.GET("/raw", func(c *Context) {
-			c.HTML(http.StatusOK, "raw.tmpl", map[string]interface{}{
+			c.HTML(http.StatusOK, "raw.tmpl", map[string]any{
 				"now": time.Date(2017, 07, 01, 0, 0, 0, 0, time.UTC),
 			})
 		})
@@ -72,10 +73,48 @@ func TestLoadHTMLGlobDebugMode(t *testing.T) {
 
 	res, err := http.Get(fmt.Sprintf("%s/test", ts.URL))
 	if err != nil {
-		fmt.Println(err)
+		t.Error(err)
 	}
 
-	resp, _ := ioutil.ReadAll(res.Body)
+	resp, _ := io.ReadAll(res.Body)
+	assert.Equal(t, "<h1>Hello world</h1>", string(resp))
+}
+
+func TestH2c(t *testing.T) {
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Error(err)
+	}
+	r := Default()
+	r.UseH2C = true
+	r.GET("/", func(c *Context) {
+		c.String(200, "<h1>Hello world</h1>")
+	})
+	go func() {
+		err := http.Serve(ln, r.Handler())
+		if err != nil {
+			t.Log(err)
+		}
+	}()
+	defer ln.Close()
+
+	url := "http://" + ln.Addr().String() + "/"
+
+	httpClient := http.Client{
+		Transport: &http2.Transport{
+			AllowHTTP: true,
+			DialTLS: func(netw, addr string, cfg *tls.Config) (net.Conn, error) {
+				return net.Dial(netw, addr)
+			},
+		},
+	}
+
+	res, err := httpClient.Get(url)
+	if err != nil {
+		t.Error(err)
+	}
+
+	resp, _ := io.ReadAll(res.Body)
 	assert.Equal(t, "<h1>Hello world</h1>", string(resp))
 }
 
@@ -92,10 +131,10 @@ func TestLoadHTMLGlobTestMode(t *testing.T) {
 
 	res, err := http.Get(fmt.Sprintf("%s/test", ts.URL))
 	if err != nil {
-		fmt.Println(err)
+		t.Error(err)
 	}
 
-	resp, _ := ioutil.ReadAll(res.Body)
+	resp, _ := io.ReadAll(res.Body)
 	assert.Equal(t, "<h1>Hello world</h1>", string(resp))
 }
 
@@ -112,10 +151,10 @@ func TestLoadHTMLGlobReleaseMode(t *testing.T) {
 
 	res, err := http.Get(fmt.Sprintf("%s/test", ts.URL))
 	if err != nil {
-		fmt.Println(err)
+		t.Error(err)
 	}
 
-	resp, _ := ioutil.ReadAll(res.Body)
+	resp, _ := io.ReadAll(res.Body)
 	assert.Equal(t, "<h1>Hello world</h1>", string(resp))
 }
 
@@ -139,10 +178,10 @@ func TestLoadHTMLGlobUsingTLS(t *testing.T) {
 	client := &http.Client{Transport: tr}
 	res, err := client.Get(fmt.Sprintf("%s/test", ts.URL))
 	if err != nil {
-		fmt.Println(err)
+		t.Error(err)
 	}
 
-	resp, _ := ioutil.ReadAll(res.Body)
+	resp, _ := io.ReadAll(res.Body)
 	assert.Equal(t, "<h1>Hello world</h1>", string(resp))
 }
 
@@ -159,11 +198,11 @@ func TestLoadHTMLGlobFromFuncMap(t *testing.T) {
 
 	res, err := http.Get(fmt.Sprintf("%s/raw", ts.URL))
 	if err != nil {
-		fmt.Println(err)
+		t.Error(err)
 	}
 
-	resp, _ := ioutil.ReadAll(res.Body)
-	assert.Equal(t, "Date: 2017/07/01\n", string(resp))
+	resp, _ := io.ReadAll(res.Body)
+	assert.Equal(t, "Date: 2017/07/01", string(resp))
 }
 
 func init() {
@@ -190,10 +229,10 @@ func TestLoadHTMLFilesTestMode(t *testing.T) {
 
 	res, err := http.Get(fmt.Sprintf("%s/test", ts.URL))
 	if err != nil {
-		fmt.Println(err)
+		t.Error(err)
 	}
 
-	resp, _ := ioutil.ReadAll(res.Body)
+	resp, _ := io.ReadAll(res.Body)
 	assert.Equal(t, "<h1>Hello world</h1>", string(resp))
 }
 
@@ -210,10 +249,10 @@ func TestLoadHTMLFilesDebugMode(t *testing.T) {
 
 	res, err := http.Get(fmt.Sprintf("%s/test", ts.URL))
 	if err != nil {
-		fmt.Println(err)
+		t.Error(err)
 	}
 
-	resp, _ := ioutil.ReadAll(res.Body)
+	resp, _ := io.ReadAll(res.Body)
 	assert.Equal(t, "<h1>Hello world</h1>", string(resp))
 }
 
@@ -230,10 +269,10 @@ func TestLoadHTMLFilesReleaseMode(t *testing.T) {
 
 	res, err := http.Get(fmt.Sprintf("%s/test", ts.URL))
 	if err != nil {
-		fmt.Println(err)
+		t.Error(err)
 	}
 
-	resp, _ := ioutil.ReadAll(res.Body)
+	resp, _ := io.ReadAll(res.Body)
 	assert.Equal(t, "<h1>Hello world</h1>", string(resp))
 }
 
@@ -257,10 +296,10 @@ func TestLoadHTMLFilesUsingTLS(t *testing.T) {
 	client := &http.Client{Transport: tr}
 	res, err := client.Get(fmt.Sprintf("%s/test", ts.URL))
 	if err != nil {
-		fmt.Println(err)
+		t.Error(err)
 	}
 
-	resp, _ := ioutil.ReadAll(res.Body)
+	resp, _ := io.ReadAll(res.Body)
 	assert.Equal(t, "<h1>Hello world</h1>", string(resp))
 }
 
@@ -277,11 +316,11 @@ func TestLoadHTMLFilesFuncMap(t *testing.T) {
 
 	res, err := http.Get(fmt.Sprintf("%s/raw", ts.URL))
 	if err != nil {
-		fmt.Println(err)
+		t.Error(err)
 	}
 
-	resp, _ := ioutil.ReadAll(res.Body)
-	assert.Equal(t, "Date: 2017/07/01\n", string(resp))
+	resp, _ := io.ReadAll(res.Body)
+	assert.Equal(t, "Date: 2017/07/01", string(resp))
 }
 
 func TestAddRoute(t *testing.T) {
@@ -395,7 +434,6 @@ func TestNoMethodWithoutGlobalHandlers(t *testing.T) {
 }
 
 func TestRebuild404Handlers(t *testing.T) {
-
 }
 
 func TestNoMethodWithGlobalHandlers(t *testing.T) {
@@ -429,7 +467,7 @@ func TestNoMethodWithGlobalHandlers(t *testing.T) {
 	compareFunc(t, router.allNoMethod[2], middleware0)
 }
 
-func compareFunc(t *testing.T, a, b interface{}) {
+func compareFunc(t *testing.T, a, b any) {
 	sf1 := reflect.ValueOf(a)
 	sf2 := reflect.ValueOf(b)
 	if sf1.Pointer() != sf2.Pointer() {
@@ -455,27 +493,27 @@ func TestListOfRoutes(t *testing.T) {
 	assertRoutePresent(t, list, RouteInfo{
 		Method:  "GET",
 		Path:    "/favicon.ico",
-		Handler: "^(.*/vendor/)?github.com/26huitailang/yogo/framework/gin.handlerTest1$",
+		Handler: "^(.*/vendor/)?github.com/gin-gonic/gin.handlerTest1$",
 	})
 	assertRoutePresent(t, list, RouteInfo{
 		Method:  "GET",
 		Path:    "/",
-		Handler: "^(.*/vendor/)?github.com/26huitailang/yogo/framework/gin.handlerTest1$",
+		Handler: "^(.*/vendor/)?github.com/gin-gonic/gin.handlerTest1$",
 	})
 	assertRoutePresent(t, list, RouteInfo{
 		Method:  "GET",
 		Path:    "/users/",
-		Handler: "^(.*/vendor/)?github.com/26huitailang/yogo/framework/gin.handlerTest2$",
+		Handler: "^(.*/vendor/)?github.com/gin-gonic/gin.handlerTest2$",
 	})
 	assertRoutePresent(t, list, RouteInfo{
 		Method:  "GET",
 		Path:    "/users/:id",
-		Handler: "^(.*/vendor/)?github.com/26huitailang/yogo/framework/gin.handlerTest1$",
+		Handler: "^(.*/vendor/)?github.com/gin-gonic/gin.handlerTest1$",
 	})
 	assertRoutePresent(t, list, RouteInfo{
 		Method:  "POST",
 		Path:    "/users/:id",
-		Handler: "^(.*/vendor/)?github.com/26huitailang/yogo/framework/gin.handlerTest2$",
+		Handler: "^(.*/vendor/)?github.com/gin-gonic/gin.handlerTest2$",
 	})
 }
 
@@ -491,7 +529,7 @@ func TestEngineHandleContext(t *testing.T) {
 	}
 
 	assert.NotPanics(t, func() {
-		w := performRequest(r, "GET", "/")
+		w := PerformRequest(r, "GET", "/")
 		assert.Equal(t, 301, w.Code)
 	})
 }
@@ -524,7 +562,7 @@ func TestEngineHandleContextManyReEntries(t *testing.T) {
 	})
 
 	assert.NotPanics(t, func() {
-		w := performRequest(r, "GET", "/"+strconv.Itoa(expectValue-1)) // include 0 value
+		w := PerformRequest(r, "GET", "/"+strconv.Itoa(expectValue-1)) // include 0 value
 		assert.Equal(t, 200, w.Code)
 		assert.Equal(t, expectValue, w.Body.Len())
 	})
@@ -539,19 +577,15 @@ func TestPrepareTrustedCIRDsWith(t *testing.T) {
 	// valid ipv4 cidr
 	{
 		expectedTrustedCIDRs := []*net.IPNet{parseCIDR("0.0.0.0/0")}
-		r.TrustedProxies = []string{"0.0.0.0/0"}
-
-		trustedCIDRs, err := r.prepareTrustedCIDRs()
+		err := r.SetTrustedProxies([]string{"0.0.0.0/0"})
 
 		assert.NoError(t, err)
-		assert.Equal(t, expectedTrustedCIDRs, trustedCIDRs)
+		assert.Equal(t, expectedTrustedCIDRs, r.trustedCIDRs)
 	}
 
 	// invalid ipv4 cidr
 	{
-		r.TrustedProxies = []string{"192.168.1.33/33"}
-
-		_, err := r.prepareTrustedCIDRs()
+		err := r.SetTrustedProxies([]string{"192.168.1.33/33"})
 
 		assert.Error(t, err)
 	}
@@ -559,19 +593,16 @@ func TestPrepareTrustedCIRDsWith(t *testing.T) {
 	// valid ipv4 address
 	{
 		expectedTrustedCIDRs := []*net.IPNet{parseCIDR("192.168.1.33/32")}
-		r.TrustedProxies = []string{"192.168.1.33"}
 
-		trustedCIDRs, err := r.prepareTrustedCIDRs()
+		err := r.SetTrustedProxies([]string{"192.168.1.33"})
 
 		assert.NoError(t, err)
-		assert.Equal(t, expectedTrustedCIDRs, trustedCIDRs)
+		assert.Equal(t, expectedTrustedCIDRs, r.trustedCIDRs)
 	}
 
 	// invalid ipv4 address
 	{
-		r.TrustedProxies = []string{"192.168.1.256"}
-
-		_, err := r.prepareTrustedCIDRs()
+		err := r.SetTrustedProxies([]string{"192.168.1.256"})
 
 		assert.Error(t, err)
 	}
@@ -579,19 +610,15 @@ func TestPrepareTrustedCIRDsWith(t *testing.T) {
 	// valid ipv6 address
 	{
 		expectedTrustedCIDRs := []*net.IPNet{parseCIDR("2002:0000:0000:1234:abcd:ffff:c0a8:0101/128")}
-		r.TrustedProxies = []string{"2002:0000:0000:1234:abcd:ffff:c0a8:0101"}
-
-		trustedCIDRs, err := r.prepareTrustedCIDRs()
+		err := r.SetTrustedProxies([]string{"2002:0000:0000:1234:abcd:ffff:c0a8:0101"})
 
 		assert.NoError(t, err)
-		assert.Equal(t, expectedTrustedCIDRs, trustedCIDRs)
+		assert.Equal(t, expectedTrustedCIDRs, r.trustedCIDRs)
 	}
 
 	// invalid ipv6 address
 	{
-		r.TrustedProxies = []string{"gggg:0000:0000:1234:abcd:ffff:c0a8:0101"}
-
-		_, err := r.prepareTrustedCIDRs()
+		err := r.SetTrustedProxies([]string{"gggg:0000:0000:1234:abcd:ffff:c0a8:0101"})
 
 		assert.Error(t, err)
 	}
@@ -599,19 +626,15 @@ func TestPrepareTrustedCIRDsWith(t *testing.T) {
 	// valid ipv6 cidr
 	{
 		expectedTrustedCIDRs := []*net.IPNet{parseCIDR("::/0")}
-		r.TrustedProxies = []string{"::/0"}
-
-		trustedCIDRs, err := r.prepareTrustedCIDRs()
+		err := r.SetTrustedProxies([]string{"::/0"})
 
 		assert.NoError(t, err)
-		assert.Equal(t, expectedTrustedCIDRs, trustedCIDRs)
+		assert.Equal(t, expectedTrustedCIDRs, r.trustedCIDRs)
 	}
 
 	// invalid ipv6 cidr
 	{
-		r.TrustedProxies = []string{"gggg:0000:0000:1234:abcd:ffff:c0a8:0101/129"}
-
-		_, err := r.prepareTrustedCIDRs()
+		err := r.SetTrustedProxies([]string{"gggg:0000:0000:1234:abcd:ffff:c0a8:0101/129"})
 
 		assert.Error(t, err)
 	}
@@ -623,39 +646,34 @@ func TestPrepareTrustedCIRDsWith(t *testing.T) {
 			parseCIDR("192.168.0.0/16"),
 			parseCIDR("172.16.0.1/32"),
 		}
-		r.TrustedProxies = []string{
+		err := r.SetTrustedProxies([]string{
 			"::/0",
 			"192.168.0.0/16",
 			"172.16.0.1",
-		}
-
-		trustedCIDRs, err := r.prepareTrustedCIDRs()
+		})
 
 		assert.NoError(t, err)
-		assert.Equal(t, expectedTrustedCIDRs, trustedCIDRs)
+		assert.Equal(t, expectedTrustedCIDRs, r.trustedCIDRs)
 	}
 
 	// invalid combination
 	{
-		r.TrustedProxies = []string{
+		err := r.SetTrustedProxies([]string{
 			"::/0",
 			"192.168.0.0/16",
 			"172.16.0.256",
-		}
-		_, err := r.prepareTrustedCIDRs()
+		})
 
 		assert.Error(t, err)
 	}
 
 	// nil value
 	{
-		r.TrustedProxies = nil
-		trustedCIDRs, err := r.prepareTrustedCIDRs()
+		err := r.SetTrustedProxies(nil)
 
-		assert.Nil(t, trustedCIDRs)
+		assert.Nil(t, r.trustedCIDRs)
 		assert.Nil(t, err)
 	}
-
 }
 
 func parseCIDR(cidr string) *net.IPNet {
