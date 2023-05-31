@@ -33,6 +33,11 @@ func getParams() *Params {
 	return &ps
 }
 
+func getSkippedNodes() *[]skippedNode {
+	ps := make([]skippedNode, 0, 20)
+	return &ps
+}
+
 func checkRequests(t *testing.T, tree *node, requests testRequests, unescapes ...bool) {
 	unescape := false
 	if len(unescapes) >= 1 {
@@ -40,7 +45,7 @@ func checkRequests(t *testing.T, tree *node, requests testRequests, unescapes ..
 	}
 
 	for _, request := range requests {
-		value := tree.getValue(request.path, getParams(), unescape)
+		value := tree.getValue(request.path, getParams(), getSkippedNodes(), unescape)
 
 		if value.handlers == nil {
 			if !request.nilHandler {
@@ -157,6 +162,8 @@ func TestTreeWildcard(t *testing.T) {
 		"/aa/*xx",
 		"/ab/*xx",
 		"/:cc",
+		"/c1/:dd/e",
+		"/c1/:dd/e1",
 		"/:cc/cc",
 		"/:cc/:dd/ee",
 		"/:cc/:dd/:ee/ff",
@@ -222,7 +229,7 @@ func TestTreeWildcard(t *testing.T) {
 		{"/a", false, "/:cc", Params{Param{Key: "cc", Value: "a"}}},
 		// * Error with argument being intercepted
 		// new PR handle (/all /all/cc /a/cc)
-		// fix PR: https://github.com/26huitailang/yogo/framework/gin/pull/2796
+		// fix PR: https://github.com/gin-gonic/gin/pull/2796
 		{"/all", false, "/:cc", Params{Param{Key: "cc", Value: "all"}}},
 		{"/d", false, "/:cc", Params{Param{Key: "cc", Value: "d"}}},
 		{"/ad", false, "/:cc", Params{Param{Key: "cc", Value: "ad"}}},
@@ -238,6 +245,9 @@ func TestTreeWildcard(t *testing.T) {
 		{"/alldd", false, "/:cc", Params{Param{Key: "cc", Value: "alldd"}}},
 		{"/all/cc", false, "/:cc/cc", Params{Param{Key: "cc", Value: "all"}}},
 		{"/a/cc", false, "/:cc/cc", Params{Param{Key: "cc", Value: "a"}}},
+		{"/c1/d/e", false, "/c1/:dd/e", Params{Param{Key: "dd", Value: "d"}}},
+		{"/c1/d/e1", false, "/c1/:dd/e1", Params{Param{Key: "dd", Value: "d"}}},
+		{"/c1/d/ee", false, "/:cc/:dd/ee", Params{Param{Key: "cc", Value: "c1"}, Param{Key: "dd", Value: "d"}}},
 		{"/cc/cc", false, "/:cc/cc", Params{Param{Key: "cc", Value: "cc"}}},
 		{"/ccc/cc", false, "/:cc/cc", Params{Param{Key: "cc", Value: "ccc"}}},
 		{"/deedwjfs/cc", false, "/:cc/cc", Params{Param{Key: "cc", Value: "deedwjfs"}}},
@@ -347,7 +357,7 @@ func TestUnescapeParameters(t *testing.T) {
 	checkPriorities(t, tree)
 }
 
-func catchPanic(testFunc func()) (recv interface{}) {
+func catchPanic(testFunc func()) (recv any) {
 	defer func() {
 		recv = recover()
 	}()
@@ -437,7 +447,7 @@ func TestTreeChildConflict(t *testing.T) {
 	testRoutes(t, routes)
 }
 
-func TestTreeDupliatePath(t *testing.T) {
+func TestTreeDuplicatePath(t *testing.T) {
 	tree := &node{}
 
 	routes := [...]string{
@@ -577,7 +587,15 @@ func TestTreeTrailingSlashRedirect(t *testing.T) {
 		"/doc/go1.html",
 		"/no/a",
 		"/no/b",
-		"/api/hello/:name",
+		"/api/:page/:name",
+		"/api/hello/:name/bar/",
+		"/api/bar/:name",
+		"/api/baz/foo",
+		"/api/baz/foo/bar",
+		"/blog/:p",
+		"/posts/:b/:c",
+		"/posts/b/:c/d/",
+		"/vendor/:x/*y",
 	}
 	for _, route := range routes {
 		recv := catchPanic(func() {
@@ -603,9 +621,22 @@ func TestTreeTrailingSlashRedirect(t *testing.T) {
 		"/admin/config/",
 		"/admin/config/permissions/",
 		"/doc/",
+		"/admin/static/",
+		"/admin/cfg/",
+		"/admin/cfg/users/",
+		"/api/hello/x/bar",
+		"/api/baz/foo/",
+		"/api/baz/bax/",
+		"/api/bar/huh/",
+		"/api/baz/foo/bar/",
+		"/api/world/abc/",
+		"/blog/pp/",
+		"/posts/b/c/d",
+		"/vendor/x",
 	}
+
 	for _, route := range tsrRoutes {
-		value := tree.getValue(route, nil, false)
+		value := tree.getValue(route, nil, getSkippedNodes(), false)
 		if value.handlers != nil {
 			t.Fatalf("non-nil handler for TSR route '%s", route)
 		} else if !value.tsr {
@@ -619,10 +650,14 @@ func TestTreeTrailingSlashRedirect(t *testing.T) {
 		"/no/",
 		"/_",
 		"/_/",
-		"/api/world/abc",
+		"/api",
+		"/api/",
+		"/api/hello/x/foo",
+		"/api/baz/foo/bad",
+		"/foo/p/p",
 	}
 	for _, route := range noTsrRoutes {
-		value := tree.getValue(route, nil, false)
+		value := tree.getValue(route, nil, getSkippedNodes(), false)
 		if value.handlers != nil {
 			t.Fatalf("non-nil handler for No-TSR route '%s", route)
 		} else if value.tsr {
@@ -641,11 +676,31 @@ func TestTreeRootTrailingSlashRedirect(t *testing.T) {
 		t.Fatalf("panic inserting test route: %v", recv)
 	}
 
-	value := tree.getValue("/", nil, false)
+	value := tree.getValue("/", nil, getSkippedNodes(), false)
 	if value.handlers != nil {
 		t.Fatalf("non-nil handler")
 	} else if value.tsr {
 		t.Errorf("expected no TSR recommendation")
+	}
+}
+
+func TestRedirectTrailingSlash(t *testing.T) {
+	var data = []struct {
+		path string
+	}{
+		{"/hello/:name"},
+		{"/hello/:name/123"},
+		{"/hello/:name/234"},
+	}
+
+	node := &node{}
+	for _, item := range data {
+		node.addRoute(item.path, fakeHandler("test"))
+	}
+
+	value := node.getValue("/hello/abx/", nil, getSkippedNodes(), false)
+	if value.tsr != true {
+		t.Fatalf("want true, is false")
 	}
 }
 
@@ -821,7 +876,7 @@ func TestTreeInvalidNodeType(t *testing.T) {
 
 	// normal lookup
 	recv := catchPanic(func() {
-		tree.getValue("/test", nil, false)
+		tree.getValue("/test", nil, getSkippedNodes(), false)
 	})
 	if rs, ok := recv.(string); !ok || rs != panicMsg {
 		t.Fatalf("Expected panic '"+panicMsg+"', got '%v'", recv)
@@ -834,6 +889,19 @@ func TestTreeInvalidNodeType(t *testing.T) {
 	if rs, ok := recv.(string); !ok || rs != panicMsg {
 		t.Fatalf("Expected panic '"+panicMsg+"', got '%v'", recv)
 	}
+}
+
+func TestTreeInvalidParamsType(t *testing.T) {
+	tree := &node{}
+	tree.wildChild = true
+	tree.children = append(tree.children, &node{})
+	tree.children[0].nType = 2
+
+	// set invalid Params type
+	params := make(Params, 0)
+
+	// try to trigger slice bounds out of range with capacity 0
+	tree.getValue("/test", &params, getSkippedNodes(), false)
 }
 
 func TestTreeWildcardConflictEx(t *testing.T) {

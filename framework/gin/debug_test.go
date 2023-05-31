@@ -1,11 +1,10 @@
-// Copyright 2014 Manu Martinez-Almeida.  All rights reserved.
+// Copyright 2014 Manu Martinez-Almeida. All rights reserved.
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 
 package gin
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"html/template"
@@ -13,6 +12,7 @@ import (
 	"log"
 	"os"
 	"runtime"
+	"strings"
 	"sync"
 	"testing"
 
@@ -21,7 +21,7 @@ import (
 
 // TODO
 // func debugRoute(httpMethod, absolutePath string, handlers HandlersChain) {
-// func debugPrint(format string, values ...interface{}) {
+// func debugPrint(format string, values ...any) {
 
 func TestIsDebugging(t *testing.T) {
 	SetMode(DebugMode)
@@ -62,7 +62,7 @@ func TestDebugPrintRoutes(t *testing.T) {
 		debugPrintRoute("GET", "/path/to/route/:param", HandlersChain{func(c *Context) {}, handlerNameTest})
 		SetMode(TestMode)
 	})
-	assert.Regexp(t, `^\[GIN-debug\] GET    /path/to/route/:param     --> (.*/vendor/)?github.com/26huitailang/yogo/framework/gin.handlerNameTest \(2 handlers\)\n$`, re)
+	assert.Regexp(t, `^\[GIN-debug\] GET    /path/to/route/:param     --> (.*/vendor/)?github.com/gin-gonic/gin.handlerNameTest \(2 handlers\)\n$`, re)
 }
 
 func TestDebugPrintRouteFunc(t *testing.T) {
@@ -74,7 +74,7 @@ func TestDebugPrintRouteFunc(t *testing.T) {
 		debugPrintRoute("GET", "/path/to/route/:param1/:param2", HandlersChain{func(c *Context) {}, handlerNameTest})
 		SetMode(TestMode)
 	})
-	assert.Regexp(t, `^\[GIN-debug\] GET    /path/to/route/:param1/:param2           --> (.*/vendor/)?github.com/26huitailang/yogo/framework/gin.handlerNameTest \(2 handlers\)\n$`, re)
+	assert.Regexp(t, `^\[GIN-debug\] GET    /path/to/route/:param1/:param2           --> (.*/vendor/)?github.com/gin-gonic/gin.handlerNameTest \(2 handlers\)\n$`, re)
 }
 
 func TestDebugPrintLoadTemplate(t *testing.T) {
@@ -103,8 +103,8 @@ func TestDebugPrintWARNINGDefault(t *testing.T) {
 		SetMode(TestMode)
 	})
 	m, e := getMinVer(runtime.Version())
-	if e == nil && m <= ginSupportMinGoVer {
-		assert.Equal(t, "[GIN-debug] [WARNING] Now Gin requires Go 1.12+.\n\n[GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.\n\n", re)
+	if e == nil && m < ginSupportMinGoVer {
+		assert.Equal(t, "[GIN-debug] [WARNING] Now Gin requires Go 1.18+.\n\n[GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.\n\n", re)
 	} else {
 		assert.Equal(t, "[GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.\n\n", re)
 	}
@@ -138,7 +138,7 @@ func captureOutput(t *testing.T, f func()) string {
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
 	go func() {
-		var buf bytes.Buffer
+		var buf strings.Builder
 		wg.Done()
 		_, err := io.Copy(&buf, reader)
 		assert.NoError(t, err)

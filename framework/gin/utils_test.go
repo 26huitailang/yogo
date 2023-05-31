@@ -1,4 +1,4 @@
-// Copyright 2014 Manu Martinez-Almeida.  All rights reserved.
+// Copyright 2014 Manu Martinez-Almeida. All rights reserved.
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 
@@ -45,11 +45,11 @@ func TestWrap(t *testing.T) {
 		fmt.Fprint(w, "hola!")
 	}))
 
-	w := performRequest(router, "POST", "/path")
+	w := PerformRequest(router, "POST", "/path")
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
 	assert.Equal(t, "hello", w.Body.String())
 
-	w = performRequest(router, "GET", "/path2")
+	w = PerformRequest(router, "GET", "/path2")
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 	assert.Equal(t, "hola!", w.Body.String())
 }
@@ -86,7 +86,7 @@ func TestFilterFlags(t *testing.T) {
 }
 
 func TestFunctionName(t *testing.T) {
-	assert.Regexp(t, `^(.*/vendor/)?github.com/26huitailang/yogo/framework/gin.somefunction$`, nameOfFunction(somefunction))
+	assert.Regexp(t, `^(.*/vendor/)?github.com/gin-gonic/gin.somefunction$`, nameOfFunction(somefunction))
 }
 
 func somefunction() {
@@ -119,13 +119,13 @@ func TestBindMiddleware(t *testing.T) {
 		called = true
 		value = c.MustGet(BindKey).(*bindTestStruct)
 	})
-	performRequest(router, "GET", "/?foo=hola&bar=10")
+	PerformRequest(router, "GET", "/?foo=hola&bar=10")
 	assert.True(t, called)
 	assert.Equal(t, "hola", value.Foo)
 	assert.Equal(t, 10, value.Bar)
 
 	called = false
-	performRequest(router, "GET", "/?foo=hola&bar=1")
+	PerformRequest(router, "GET", "/?foo=hola&bar=1")
 	assert.False(t, called)
 
 	assert.Panics(t, func() {
@@ -142,4 +142,9 @@ func TestMarshalXMLforH(t *testing.T) {
 	var x xml.StartElement
 	e := h.MarshalXML(enc, x)
 	assert.Error(t, e)
+}
+
+func TestIsASCII(t *testing.T) {
+	assert.Equal(t, isASCII("test"), true)
+	assert.Equal(t, isASCII("🧡💛💚💙💜"), false)
 }

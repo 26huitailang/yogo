@@ -1,4 +1,4 @@
-// Copyright 2017 Manu Martinez-Almeida.  All rights reserved.
+// Copyright 2017 Manu Martinez-Almeida. All rights reserved.
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 
@@ -9,12 +9,13 @@ import (
 	"crypto/tls"
 	"fmt"
 	"html/template"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sync"
 	"testing"
 	"time"
@@ -42,7 +43,7 @@ func testRequest(t *testing.T, params ...string) {
 	assert.NoError(t, err)
 	defer resp.Body.Close()
 
-	body, ioerr := ioutil.ReadAll(resp.Body)
+	body, ioerr := io.ReadAll(resp.Body)
 	assert.NoError(t, ioerr)
 
 	var responseStatus = "200 OK"
@@ -76,12 +77,80 @@ func TestRunEmpty(t *testing.T) {
 	testRequest(t, "http://localhost:8080/example")
 }
 
-func TestTrustedCIDRsForRun(t *testing.T) {
+func TestBadTrustedCIDRs(t *testing.T) {
+	router := New()
+	assert.Error(t, router.SetTrustedProxies([]string{"hello/world"}))
+}
+
+/* legacy tests
+func TestBadTrustedCIDRsForRun(t *testing.T) {
 	os.Setenv("PORT", "")
 	router := New()
 	router.TrustedProxies = []string{"hello/world"}
 	assert.Error(t, router.Run(":8080"))
 }
+
+func TestBadTrustedCIDRsForRunUnix(t *testing.T) {
+	router := New()
+	router.TrustedProxies = []string{"hello/world"}
+
+	unixTestSocket := filepath.Join(os.TempDir(), "unix_unit_test")
+
+	defer os.Remove(unixTestSocket)
+
+	go func() {
+		router.GET("/example", func(c *Context) { c.String(http.StatusOK, "it worked") })
+		assert.Error(t, router.RunUnix(unixTestSocket))
+	}()
+	// have to wait for the goroutine to start and run the server
+	// otherwise the main thread will complete
+	time.Sleep(5 * time.Millisecond)
+}
+
+func TestBadTrustedCIDRsForRunFd(t *testing.T) {
+	router := New()
+	router.TrustedProxies = []string{"hello/world"}
+
+	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
+	assert.NoError(t, err)
+	listener, err := net.ListenTCP("tcp", addr)
+	assert.NoError(t, err)
+	socketFile, err := listener.File()
+	assert.NoError(t, err)
+
+	go func() {
+		router.GET("/example", func(c *Context) { c.String(http.StatusOK, "it worked") })
+		assert.Error(t, router.RunFd(int(socketFile.Fd())))
+	}()
+	// have to wait for the goroutine to start and run the server
+	// otherwise the main thread will complete
+	time.Sleep(5 * time.Millisecond)
+}
+
+func TestBadTrustedCIDRsForRunListener(t *testing.T) {
+	router := New()
+	router.TrustedProxies = []string{"hello/world"}
+
+	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
+	assert.NoError(t, err)
+	listener, err := net.ListenTCP("tcp", addr)
+	assert.NoError(t, err)
+	go func() {
+		router.GET("/example", func(c *Context) { c.String(http.StatusOK, "it worked") })
+		assert.Error(t, router.RunListener(listener))
+	}()
+	// have to wait for the goroutine to start and run the server
+	// otherwise the main thread will complete
+	time.Sleep(5 * time.Millisecond)
+}
+
+func TestBadTrustedCIDRsForRunTLS(t *testing.T) {
+	os.Setenv("PORT", "")
+	router := New()
+	router.TrustedProxies = []string{"hello/world"}
+	assert.Error(t, router.RunTLS(":8080", "./testdata/certificate/cert.pem", "./testdata/certificate/key.pem"))
+}
+*/
 
 func TestRunTLS(t *testing.T) {
 	router := New()
@@ -213,7 +282,16 @@ func TestFileDescriptor(t *testing.T) {
 	listener, err := net.ListenTCP("tcp", addr)
 	assert.NoError(t, err)
 	socketFile, err := listener.File()
-	assert.NoError(t, err)
+	if isWindows() {
+		// not supported by windows, it is unimplemented now
+		assert.Error(t, err)
+	} else {
+		assert.NoError(t, err)
+	}
+
+	if socketFile == nil {
+		return
+	}
 
 	go func() {
 		router.GET("/example", func(c *Context) { c.String(http.StatusOK, "it worked") })
@@ -340,8 +418,13 @@ func TestTreeRunDynamicRouting(t *testing.T) {
 	router.GET("/ab/*xx", func(c *Context) { c.String(http.StatusOK, "/ab/*xx") })
 	router.GET("/", func(c *Context) { c.String(http.StatusOK, "home") })
 	router.GET("/:cc", func(c *Context) { c.String(http.StatusOK, "/:cc") })
+	router.GET("/c1/:dd/e", func(c *Context) { c.String(http.StatusOK, "/c1/:dd/e") })
+	router.GET("/c1/:dd/e1", func(c *Context) { c.String(http.StatusOK, "/c1/:dd/e1") })
+	router.GET("/c1/:dd/f1", func(c *Context) { c.String(http.StatusOK, "/c1/:dd/f1") })
+	router.GET("/c1/:dd/f2", func(c *Context) { c.String(http.StatusOK, "/c1/:dd/f2") })
 	router.GET("/:cc/cc", func(c *Context) { c.String(http.StatusOK, "/:cc/cc") })
 	router.GET("/:cc/:dd/ee", func(c *Context) { c.String(http.StatusOK, "/:cc/:dd/ee") })
+	router.GET("/:cc/:dd/f", func(c *Context) { c.String(http.StatusOK, "/:cc/:dd/f") })
 	router.GET("/:cc/:dd/:ee/ff", func(c *Context) { c.String(http.StatusOK, "/:cc/:dd/:ee/ff") })
 	router.GET("/:cc/:dd/:ee/:ff/gg", func(c *Context) { c.String(http.StatusOK, "/:cc/:dd/:ee/:ff/gg") })
 	router.GET("/:cc/:dd/:ee/:ff/:gg/hh", func(c *Context) { c.String(http.StatusOK, "/:cc/:dd/:ee/:ff/:gg/hh") })
@@ -378,6 +461,10 @@ func TestTreeRunDynamicRouting(t *testing.T) {
 	testRequest(t, ts.URL+"/all", "", "/:cc")
 	testRequest(t, ts.URL+"/all/cc", "", "/:cc/cc")
 	testRequest(t, ts.URL+"/a/cc", "", "/:cc/cc")
+	testRequest(t, ts.URL+"/c1/d/e", "", "/c1/:dd/e")
+	testRequest(t, ts.URL+"/c1/d/e1", "", "/c1/:dd/e1")
+	testRequest(t, ts.URL+"/c1/d/ee", "", "/:cc/:dd/ee")
+	testRequest(t, ts.URL+"/c1/d/f", "", "/:cc/:dd/f")
 	testRequest(t, ts.URL+"/c/d/ee", "", "/:cc/:dd/ee")
 	testRequest(t, ts.URL+"/c/d/e/ff", "", "/:cc/:dd/:ee/ff")
 	testRequest(t, ts.URL+"/c/d/e/f/gg", "", "/:cc/:dd/:ee/:ff/gg")
@@ -460,7 +547,17 @@ func TestTreeRunDynamicRouting(t *testing.T) {
 	testRequest(t, ts.URL+"/get/abc/123abf/testss", "", "/get/abc/123abf/:param")
 	testRequest(t, ts.URL+"/get/abc/123abfff/te", "", "/get/abc/123abfff/:param")
 	// 404 not found
+	testRequest(t, ts.URL+"/c/d/e", "404 Not Found")
+	testRequest(t, ts.URL+"/c/d/e1", "404 Not Found")
+	testRequest(t, ts.URL+"/c/d/eee", "404 Not Found")
+	testRequest(t, ts.URL+"/c1/d/eee", "404 Not Found")
+	testRequest(t, ts.URL+"/c1/d/e2", "404 Not Found")
+	testRequest(t, ts.URL+"/cc/dd/ee/ff/gg/hh1", "404 Not Found")
 	testRequest(t, ts.URL+"/a/dd", "404 Not Found")
 	testRequest(t, ts.URL+"/addr/dd/aa", "404 Not Found")
 	testRequest(t, ts.URL+"/something/secondthing/121", "404 Not Found")
+}
+
+func isWindows() bool {
+	return runtime.GOOS == "windows"
 }

@@ -1,11 +1,10 @@
 # yogo
 
-## Backend
+- quasar: vue3 + vite
+- gin: web framework
+- cobra: cli
 
-- custom gin
-- cobra
+## todo
 
-## Frontend
-
-- vue3
-- element plus
+- [ ] use original gin
+- [ ] docker dev env
