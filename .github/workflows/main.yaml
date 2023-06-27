@@ -1,25 +1,36 @@
 name: yogo
+
+env:
+  GOPROXY: https://goproxy.io,direct
+  GO111MODULE: "on"
+
 run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
 on: [push]
 jobs:
   go-test:
     runs-on: ubuntu-22.04
     steps:
+      - name: CA
+        run: |
+          env
+          apt update
+          apt-get install ca-certificates -y
+          update-ca-certificates
+
       - name: Check out repository code
         uses: actions/checkout@v3
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4
         with:
-          go-version: 1.19
-          cache: true
+          go-version: '1.20'
+          check-latest: true
+          cache-dependency-path: go.sum
 
       - name: Go version
-        run: go version
+        run: go version && env
 
       - name: Build
-        env:
-          GOPROXY: https://proxy.golang.com.cn,direct
-        run: go build -v ./...
+        run: go mod vendor && go build -v ./...
 
       - name: Test
         run: go test -v ./...
