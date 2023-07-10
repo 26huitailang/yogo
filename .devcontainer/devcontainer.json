@@ -9,6 +9,7 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
+				"eamodio.gitlens",
 				"golang.go",
 				"Vue.vscode-typescript-vue-plugin",
 				"Vue.volar"
