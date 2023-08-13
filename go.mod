@@ -18,6 +18,7 @@ require (
 	github.com/google/go-github/v39 v39.2.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/google/uuid v1.3.0
+	github.com/google/wire v0.5.0
 	github.com/inconshreveable/mousetrap v1.0.0
 	github.com/jianfengye/collection v1.4.2
 	github.com/json-iterator/go v1.1.12
