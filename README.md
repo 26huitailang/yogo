@@ -6,7 +6,7 @@
 
 ## todo
 
-- [ ] casbin
+- [ ] casbin, https://github.com/gin-contrib/authz
 - [ ] oauth2
 
 ## Project Tree
