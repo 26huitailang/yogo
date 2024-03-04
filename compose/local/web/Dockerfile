@@ -30,6 +30,13 @@ ENV GOPROXY https://goproxy.io,direct
 
 WORKDIR ${APP_HOME}
 
+# Create devcontainer user and add it to sudoers
+RUN mkdir -p /etc/sudoers.d \
+  && groupadd --gid 1000 dev-user \
+  && useradd --uid 1000 --gid dev-user --shell /bin/bash --create-home dev-user \
+  && echo dev-user ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/dev-user \
+  && chmod 0440 /etc/sudoers.d/dev-user
+
 # devcontainer dependencies and utils
 RUN apt-get update && apt-get install --no-install-recommends -y \
   sudo git bash-completion vim ssh
@@ -52,11 +59,7 @@ ENTRYPOINT ["/entrypoint"]
 #
 #
 #
-## Create devcontainer user and add it to sudoers
-#RUN groupadd --gid 1000 dev-user \
-#  && useradd --uid 1000 --gid dev-user --shell /bin/bash --create-home dev-user \
-#  && echo dev-user ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/dev-user \
-#  && chmod 0440 /etc/sudoers.d/dev-user
+
 
 
 

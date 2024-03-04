@@ -1,0 +1,13 @@
+ps -ef
+netstat -antp
+ps -ef
+ps -ef 
+curl http://localhost:8080
+curl http://localhost:8000
+curl http://localhost:8000/
+go run . app 
+go run . app start
+curl http://localhost:8888
+curl http://localhost:8888 -vv
+git status
+git log --oneline
