@@ -1,0 +1,7 @@
+# PostgreSQL
+# ------------------------------------------------------------------------------
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_DB=yogo
+POSTGRES_USER=HphvPIMLbHsdvjCARbHNRVtfKPWVoxkd
+POSTGRES_PASSWORD=Tg6FKkjPivEJGhCiYO0SuKgJPHs87VHjwSXUwlKJbNCZn6S1oEztRiXtjE5Idtr3
