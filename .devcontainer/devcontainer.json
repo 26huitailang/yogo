@@ -1,11 +1,30 @@
+// For format details, see https://containers.dev/implementors/json_reference/
 {
-	"build": {
-		"dockerfile": "Dockerfile"
-	},
-	"runArgs": [
-		"--env-file",
-		".devcontainer/devcontainer.env"
+	"name": "yogo_dev",
+	"dockerComposeFile": [
+		"../local.yml"
 	],
+	"init": true,
+	"mounts": [
+		{
+			"source": "./.devcontainer/bash_history",
+			"target": "/home/dev-user/.bash_history",
+			"type": "bind"
+		},
+		{
+			"source": "~/.ssh",
+			"target": "/home/dev-user/.ssh",
+			"type": "bind"
+		}
+	],
+	// Tells devcontainer.json supporting services / tools whether they should run
+	// /bin/sh -c "while sleep 1000; do :; done" when starting the container instead of the container’s default command
+	"overrideCommand": false,
+	"service": "web",
+	// "remoteEnv": {"PATH": "/home/dev-user/.local/bin:${containerEnv:PATH}"},
+	"remoteUser": "dev-user",
+	"workspaceFolder": "/app",
+	// Set *default* container specific settings.json values on container create.
 	"customizations": {
 		"vscode": {
 			"extensions": [
@@ -16,9 +35,11 @@
 			]
 		}
 	},
-	"forwardPorts": [
-		3000
-	],
-	"postCreateCommand": "bash -i scripts/install-dev-tools.sh",
-	"features": {}
+	"forwardPorts": [],
+	// Uncomment the next line if you want start specific services in your Docker Compose config.
+	// "runServices": [],
+	// Uncomment the next line if you want to keep your containers running after VS Code shuts down.
+	// "shutdownAction": "none",
+	// Uncomment the next line to run commands after the container is created.
+	"postCreateCommand": "cat .devcontainer/bashrc.override.sh >> ~/.bashrc"
 }
