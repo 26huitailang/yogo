@@ -50,7 +50,7 @@ RUN mkdir -p /etc/sudoers.d \
 
 # devcontainer dependencies and utils
 RUN apt-get update && apt-get install --no-install-recommends -y \
-  sudo git bash-completion vim ssh gcc g++ net-tools
+  sudo git bash-completion vim ssh gcc g++ net-tools \
   # cleaning up unused files
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   && rm -rf /var/lib/apt/lists/*
