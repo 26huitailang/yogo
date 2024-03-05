@@ -60,3 +60,6 @@ package-lock.json
 yarn.lock
 
 .VSCodeCounter
+
+bash_history
+.pnpm-store/

@@ -1,32 +1,43 @@
-FROM golang:1.22-bookworm as golang
+FROM debian:12-slim as base
 
-FROM golang as golang-build-stage
+FROM base as build-stage
 
-ARG BUILD_ENVIRONMENT=local
-ARG APP_HOME=/app
-ENV GOPROXY https://goproxy.io,direct
+# 设置环境变量，Go 官方仓库通常建议设置这些变量
+ENV GOLANG_VERSION 1.21.7
+ENV GOPATH /go
+ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
 
-#RUN sed -i "s@http://deb.debian.org@http://mirrors.aliyun.com@g" /etc/apt/sources.list && rm -rf /var/lib/apt/lists/* && apt-get update
-#RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
-RUN apt-get update && apt-get install --no-install-recommends -y \
-  gcc \
-  g++
+# 更新系统并安装必要的包以支持下载和解压 Go 安装程序
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends ca-certificates curl && \
+    rm -rf /var/lib/apt/lists/*
 
-WORKDIR ${APP_HOME}
-
+# 下载并安装 Go
+RUN curl -fsSL https://golang.org/dl/go$GOLANG_VERSION.linux-amd64.tar.gz -o go.tar.gz && \
+    tar -C /usr/local -xzvf go.tar.gz && \
+    rm go.tar.gz
 RUN go version
-COPY go.mod .
-COPY go.sum .
-RUN go mod vendor
 
-# alpine/scratch/busybox choose one
-FROM golang as golang-run-stage
+# 设置工作目录
+WORKDIR /app
+
+# 前端工具安装
+COPY scripts ./scripts
+RUN chmod +x ./scripts/*.sh
+RUN /usr/bin/bash ./scripts/install-front-dev.sh
+
+# 在这里添加任何额外的构建或运行时所需的命令
+
+# 清理缓存及无用文件
+RUN apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+FROM build-stage as dev-stage
 
 ARG BUILD_ENVIRONMENT=local
 ARG APP_HOME=/app
-
-ENV BUILD_ENV ${BUILD_ENVIRONMENT}
 ENV GOPROXY https://goproxy.io,direct
+ENV BUILD_ENV ${BUILD_ENVIRONMENT}
 
 WORKDIR ${APP_HOME}
 
@@ -39,9 +50,17 @@ RUN mkdir -p /etc/sudoers.d \
 
 # devcontainer dependencies and utils
 RUN apt-get update && apt-get install --no-install-recommends -y \
-  sudo git bash-completion vim ssh
+  sudo git bash-completion vim ssh gcc g++ net-tools
+  # cleaning up unused files
+  && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
+  && rm -rf /var/lib/apt/lists/*
 #RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 #RUN apk --no-cache add ca-certificates sqlite
+
+# dev scripts
+COPY scripts ./scripts
+RUN chmod +x ./scripts/*.sh
+RUN /usr/bin/bash ./scripts/install-front-dev.sh
 
 COPY ./compose/production/web/entrypoint /entrypoint
 RUN sed -i 's/\r$//g' /entrypoint
@@ -52,23 +71,3 @@ RUN sed -i 's/\r$//g' /start
 RUN chmod +x /start
 
 ENTRYPOINT ["/entrypoint"]
-
-# Python 'run' stage
-#FROM python as python-run-stage
-#
-#
-#
-#
-
-
-
-
-## Install required system dependencies
-#RUN apt-get update && apt-get install --no-install-recommends -y \
-#  # psycopg2 dependencies
-#  libpq-dev \
-#  # Translations dependencies
-#  gettext \
-#  # cleaning up unused files
-#  && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
-#  && rm -rf /var/lib/apt/lists/*

@@ -31,7 +31,8 @@
 				"eamodio.gitlens",
 				"golang.go",
 				"Vue.vscode-typescript-vue-plugin",
-				"Vue.volar"
+				"Vue.volar",
+				"Alibaba-Cloud.tongyi-lingma"
 			]
 		}
 	},
