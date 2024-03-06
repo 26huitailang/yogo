@@ -17,6 +17,8 @@ services:
       - mailpit
     volumes:
       - .:/app:z
+      - /app/node_modules
+      - /app/.pnpm-store
     env_file:
       - .envs/.local/.web
       - ./.envs/.local/.postgres
