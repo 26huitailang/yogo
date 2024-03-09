@@ -109,6 +109,21 @@ var appStartCommand = &cobra.Command{
 			}
 		}
 		serverPidFile := filepath.Join(pidFolder, "app.pid")
+		// check pid process exists
+		content, err := ioutil.ReadFile(serverPidFile)
+		if err != nil {
+			return err
+		}
+		if len(content) > 0 {
+			pid, err := strconv.Atoi(string(content))
+			if err != nil {
+				return err
+			}
+			if util.CheckProcessExist(pid) {
+				return errors.New(fmt.Sprintf("app is running: %d", pid))
+			}
+		}
+
 		logFolder := appService.LogFolder()
 		if !util.Exists(logFolder) {
 			if err := os.MkdirAll(logFolder, os.ModePerm); err != nil {

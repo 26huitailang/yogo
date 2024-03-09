@@ -38,8 +38,8 @@ ARG BUILD_ENVIRONMENT=local
 ARG APP_HOME=/app
 ENV GOPROXY https://goproxy.io,direct
 ENV BUILD_ENV ${BUILD_ENVIRONMENT}
-
-WORKDIR ${APP_HOME}
+ENV GOPATH /go
+ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
 
 # Create devcontainer user and add it to sudoers
 RUN mkdir -p /etc/sudoers.d \
@@ -47,6 +47,7 @@ RUN mkdir -p /etc/sudoers.d \
   && useradd --uid 1000 --gid dev-user --shell /bin/bash --create-home dev-user \
   && echo dev-user ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/dev-user \
   && chmod 0440 /etc/sudoers.d/dev-user
+RUN mkdir -p /go && chown -R dev-user:dev-user /go
 
 # devcontainer dependencies and utils
 RUN apt-get update && apt-get install --no-install-recommends -y \
@@ -69,5 +70,8 @@ RUN chmod +x /entrypoint
 COPY ./compose/local/web/start /start
 RUN sed -i 's/\r$//g' /start
 RUN chmod +x /start
+
+WORKDIR ${APP_HOME}
+USER dev-user
 
 ENTRYPOINT ["/entrypoint"]
