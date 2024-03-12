@@ -15,6 +15,20 @@
       "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/tsx",
       "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"],
       "program": "${file}"
+    },
+    {
+      "name": "delve",
+      "type": "go",
+      "request": "attach",
+      "mode": "remote",
+      "remotePath": "",
+      "port": 2345,
+      "host": "127.0.0.1",
+      "program": "${workspaceFolder}",
+      "env": {},
+      "args": [],
+      "showLog": true,
+      "apiVersion": 2
     }
   ]
 }
