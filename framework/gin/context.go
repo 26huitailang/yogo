@@ -6,7 +6,6 @@ package gin
 
 import (
 	"errors"
-	"github.com/26huitailang/yogo/framework"
 	"io"
 	"log"
 	"math"
@@ -20,6 +19,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/26huitailang/yogo/framework"
 	"github.com/26huitailang/yogo/framework/gin/binding"
 	"github.com/26huitailang/yogo/framework/gin/render"
 	"github.com/gin-contrib/sse"
@@ -1237,13 +1237,13 @@ func (c *Context) Value(key any) any {
 }
 
 func (ctx *Context) Make(key string) (interface{}, error) {
-	return ctx.container.Make(key)
+	return ctx.engine.container.Make(key)
 }
 
 func (ctx *Context) MustMake(key string) interface{} {
-	return ctx.container.MustMake(key)
+	return ctx.engine.container.MustMake(key)
 }
 
 func (ctx *Context) MakeNew(key string, params []interface{}) (interface{}, error) {
-	return ctx.container.MakeNew(key, params)
+	return ctx.engine.container.MakeNew(key, params)
 }

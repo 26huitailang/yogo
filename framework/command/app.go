@@ -120,10 +120,7 @@ var appStartCommand = &cobra.Command{
 					return err
 				}
 
-				ok, err := util.CheckProcessExistOptionalName(pid, "app")
-				if err != nil {
-					return fmt.Errorf("app check error: %v", err)
-				}
+				ok, _ := util.CheckProcessExistOptionalName(pid, "yogo")
 				if ok {
 					return fmt.Errorf("app is running: %d", pid)
 				}
@@ -225,10 +222,7 @@ var appRestartCommand = &cobra.Command{
 				if err != nil {
 					return err
 				}
-				pExist, err := util.CheckProcessExistOptionalName(pid, "yogo")
-				if err != nil {
-					return fmt.Errorf("app check error: %v", err)
-				}
+				pExist, _ := util.CheckProcessExistOptionalName(pid, "yogo")
 				if pExist {
 					if err := syscall.Kill(pid, syscall.SIGTERM); err != nil {
 						return err
