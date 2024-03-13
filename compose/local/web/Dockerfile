@@ -52,6 +52,7 @@ RUN mkdir -p /go && chown -R dev-user:dev-user /go
 # devcontainer dependencies and utils
 RUN apt-get update && apt-get install --no-install-recommends -y \
   sudo git bash-completion vim ssh gcc g++ net-tools \
+  htop \
   # cleaning up unused files
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   && rm -rf /var/lib/apt/lists/*
@@ -73,5 +74,11 @@ RUN chmod +x /start
 
 WORKDIR ${APP_HOME}
 USER dev-user
+
+RUN go install github.com/go-delve/delve/cmd/dlv@latest
+RUN go install github.com/cosmtrek/air@latest
+
+RUN dlv version
+RUN air -v
 
 ENTRYPOINT ["/entrypoint"]

@@ -31,7 +31,8 @@
 				"eamodio.gitlens",
 				"golang.go",
 				"Vue.volar",
-				"Alibaba-Cloud.tongyi-lingma"
+				"Alibaba-Cloud.tongyi-lingma",
+				"tamasfe.even-better-toml"
 			]
 		}
 	},

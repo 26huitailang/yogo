@@ -1,4 +1,5 @@
 tag=latest
+.PHONY: build tree
 build:
 	docker build -f docker/Dockerfile -t yogo:$(tag) .
 

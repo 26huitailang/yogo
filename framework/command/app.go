@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/signal"
@@ -110,20 +109,26 @@ var appStartCommand = &cobra.Command{
 		}
 		serverPidFile := filepath.Join(pidFolder, "app.pid")
 		// check pid process exists
-		content, err := ioutil.ReadFile(serverPidFile)
-		if err != nil {
-			return err
-		}
-		if len(content) > 0 {
-			pid, err := strconv.Atoi(string(content))
+		if util.Exists(serverPidFile) {
+			pidContent, err := os.ReadFile(serverPidFile)
 			if err != nil {
 				return err
 			}
-			if util.CheckProcessExist(pid) {
-				return errors.New(fmt.Sprintf("app is running: %d", pid))
+			if len(pidContent) > 0 {
+				pid, err := strconv.Atoi(string(pidContent))
+				if err != nil {
+					return err
+				}
+
+				ok, err := util.CheckProcessExistOptionalName(pid, "app")
+				if err != nil {
+					return fmt.Errorf("app check error: %v", err)
+				}
+				if ok {
+					return fmt.Errorf("app is running: %d", pid)
+				}
 			}
 		}
-
 		logFolder := appService.LogFolder()
 		if !util.Exists(logFolder) {
 			if err := os.MkdirAll(logFolder, os.ModePerm); err != nil {
@@ -162,7 +167,7 @@ var appStartCommand = &cobra.Command{
 		// 非daemon模式
 		content := strconv.Itoa(os.Getpid())
 		fmt.Println("[PID]", content)
-		err := ioutil.WriteFile(serverPidFile, []byte(content), 0644)
+		err := os.WriteFile(serverPidFile, []byte(content), 0644)
 		if err != nil {
 			return err
 		}
@@ -183,7 +188,7 @@ var appStateCommand = &cobra.Command{
 		container := cmd.GetContainer()
 		appService := container.MustMake(contract.AppKey).(contract.App)
 		runtimeFolder := appService.RuntimeFolder()
-		content, err := ioutil.ReadFile(filepath.Join(runtimeFolder, "app.pid"))
+		content, err := os.ReadFile(filepath.Join(runtimeFolder, "app.pid"))
 		if err != nil {
 			return err
 		}
@@ -208,45 +213,55 @@ var appRestartCommand = &cobra.Command{
 		container := c.GetContainer()
 		appService := container.MustMake(contract.AppKey).(contract.App)
 		appPidFile := filepath.Join(appService.RuntimeFolder(), "app.pid")
-		content, err := ioutil.ReadFile(appPidFile)
-		if err != nil {
-			return err
-		}
-		if len(content) > 0 {
-			pid, err := strconv.Atoi(string(content))
+		if !util.Exists(appPidFile) {
+			fmt.Println("app.pid not found, start directly")
+		} else {
+			content, err := os.ReadFile(appPidFile)
 			if err != nil {
 				return err
 			}
-			if util.CheckProcessExist(pid) {
-				if err := syscall.Kill(pid, syscall.SIGTERM); err != nil {
+			if len(content) > 0 {
+				pid, err := strconv.Atoi(string(content))
+				if err != nil {
 					return err
 				}
-				closeWait := 5
-				configService := container.MustMake(contract.ConfigKey).(contract.Config)
-				if configService.IsExist("app.close_wait") {
-					closeWait = configService.GetInt("app.close_wait")
+				pExist, err := util.CheckProcessExistOptionalName(pid, "yogo")
+				if err != nil {
+					return fmt.Errorf("app check error: %v", err)
 				}
-				for i := 0; i < closeWait*2; i++ {
-					if !util.CheckProcessExist(pid) {
-						break
+				if pExist {
+					if err := syscall.Kill(pid, syscall.SIGTERM); err != nil {
+						return err
 					}
-					time.Sleep(1 * time.Second)
-				}
-				if util.CheckProcessExist(pid) {
-					fmt.Println("stop app process failed, pid:", pid)
-					return errors.New("stop app process failed")
-				}
+					closeWait := 5
+					configService := container.MustMake(contract.ConfigKey).(contract.Config)
+					if configService.IsExist("app.close_wait") {
+						closeWait = configService.GetInt("app.close_wait")
+					}
+					for i := 0; i < closeWait*2; i++ {
+						if !util.CheckProcessExist(pid) {
+							break
+						}
+						time.Sleep(1 * time.Second)
+					}
+					if exist, _ := util.CheckProcessExistOptionalName(pid, "yogo"); exist {
+						fmt.Println("stop app process failed, pid:", pid)
+						return errors.New("stop app process failed")
+					}
 
-				if err := os.WriteFile(appPidFile, []byte(""), 0644); err != nil {
-					return err
+					if err := os.WriteFile(appPidFile, []byte(""), 0644); err != nil {
+						return err
+					}
+					fmt.Println("stop app process successfully, pid:", pid)
 				}
-				fmt.Println("stop app process successfully, pid:", pid)
 			}
 		}
-		appDaemon = true
+		appDaemon = false
+
 		return appStartCommand.RunE(c, args)
 	},
 }
+
 var appStopCommand = &cobra.Command{
 	Use:   "stop",
 	Short: "应用状态",
@@ -254,7 +269,7 @@ var appStopCommand = &cobra.Command{
 		container := cmd.GetContainer()
 		appService := container.MustMake(contract.AppKey).(contract.App)
 		appPidFile := filepath.Join(appService.RuntimeFolder(), "app.pid")
-		content, err := ioutil.ReadFile(appPidFile)
+		content, err := os.ReadFile(appPidFile)
 		if err != nil {
 			return err
 		}
