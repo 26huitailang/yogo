@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "go-Connect to server",
+      "name": "delve-remote",
       "type": "go",
       "request": "attach",
       "mode": "remote",

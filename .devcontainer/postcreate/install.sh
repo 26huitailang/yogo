@@ -11,3 +11,13 @@ cat .devcontainer/bashrc.override.sh >> ~/.bashrc
 
 # # 如果需要生成或更新依赖关系图
 # go get -u github.com/kisielk/godepgraph     # 生成依赖关系图
+
+# shell判断是否文件夹存在，如果存在 chown 给 dev-user 用户
+directories=(.pnpm-store node_modules)
+for dir in "${directories[@]}"; do
+	if [ ! -d "$dir" ]; then
+		sudo chown -R dev-user "$dir"
+	fi
+done
+go mod vendor
+pnpm install

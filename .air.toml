@@ -6,7 +6,7 @@ tmp_dir = "tmp"
   args_bin = ["app", "restart"]
   bin = "./tmp/yogo"
   cmd = "go build -o ./tmp/yogo ./main.go"
-  full_bin = "dlv exec ./tmp/yogo --headless --listen=:2345 --api-version=2 --log --"
+  full_bin = "dlv exec ./tmp/yogo --headless --listen=:2345 --api-version=2 --log --continue --accept-multiclient --"
   delay = 1000
   exclude_dir = ["assets", "tmp", "vendor", ".pnpm-store", "node_modules", "storage", "src"]
   exclude_file = []
