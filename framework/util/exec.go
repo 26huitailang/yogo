@@ -37,6 +37,6 @@ func CheckProcessExistOptionalName(pid int, name string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	fmt.Println("process name", pName)
+	fmt.Printf("process %d name %s\n", pid, pName)
 	return strings.Contains(pName, name), nil
 }

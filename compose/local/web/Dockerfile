@@ -3,7 +3,7 @@ FROM debian:12-slim as base
 FROM base as build-stage
 
 # 设置环境变量，Go 官方仓库通常建议设置这些变量
-ENV GOLANG_VERSION 1.21.7
+ENV GOLANG_VERSION 1.22.1
 ENV GOPATH /go
 ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
 

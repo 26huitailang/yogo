@@ -1,5 +1,6 @@
 url: http://127.0.0.1:8066
 swagger: true
+close_wait: 5
 dev:
   port: 8087
   backend:
