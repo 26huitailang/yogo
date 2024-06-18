@@ -72,12 +72,10 @@
           })
         })
         .then((credential) => {
-          debugger;
           let attestationObject = credential.response.attestationObject;
           let clientDataJSON = credential.response.clientDataJSON;
           let rawId = credential.rawId;
 
-          // todo: 改成 json 请求，用 ajax
           $.post(
             {
               contentType: "application/json",

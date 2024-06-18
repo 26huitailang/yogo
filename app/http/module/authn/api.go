@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/26huitailang/yogo/framework/gin"
+	"github.com/go-webauthn/webauthn/protocol"
+	"github.com/go-webauthn/webauthn/webauthn"
 )
 
 type AuthnApi struct {
@@ -43,7 +45,12 @@ func (api *AuthnApi) RegisterBegin(c *gin.Context) {
 		user = NewUser(username, displayName)
 		datastore.PutUser(user)
 	}
-	options, session, err := webAuthn.BeginRegistration(user)
+	authSelect := protocol.AuthenticatorSelection{
+		AuthenticatorAttachment: protocol.AuthenticatorAttachment(""),
+		RequireResidentKey:      protocol.ResidentKeyNotRequired(),
+		UserVerification:        protocol.VerificationRequired,
+	}
+	options, session, err := webAuthn.BeginRegistration(user, webauthn.WithAuthenticatorSelection(authSelect))
 	if err != nil {
 		c.AbortWithError(500, err)
 		return

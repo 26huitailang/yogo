@@ -120,7 +120,7 @@ func (db *Datastore) GetWebAuthnSession(key string) (*webauthn.SessionData, erro
 
 func NewWebAuthNService() (*webauthn.WebAuthn, error) {
 	wconfig := &webauthn.Config{
-		RPDisplayName: "yogo webauthn",                   // Display Name for your site
+		RPDisplayName: "Yogo",                            // Display Name for your site
 		RPID:          "localhost",                       // Generally the FQDN for your site
 		RPOrigins:     []string{"http://localhost:8888"}, // The origin URLs allowed for WebAuthn requests
 	}
