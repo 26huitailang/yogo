@@ -32,7 +32,8 @@
 				"golang.go",
 				"Vue.volar",
 				"Alibaba-Cloud.tongyi-lingma",
-				"tamasfe.even-better-toml"
+				"tamasfe.even-better-toml",
+				"ms-azuretools.vscode-docker"
 			]
 		}
 	},

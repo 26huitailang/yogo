@@ -1,96 +1,74 @@
+FROM debian:12-slim as base
 
-# define an alias for the specific python version used in this file.
-FROM python:3.11.7-slim-bookworm as python
+FROM base as build-stage
 
-# Python build stage
-FROM python as python-build-stage
+ARG GO_VERSION=1.22.6
 
-ARG BUILD_ENVIRONMENT=production
+ENV GOPATH /go
+ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
 
-# Install apt packages
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends ca-certificates curl && \
+    rm -rf /var/lib/apt/lists/*
+
 RUN apt-get update && apt-get install --no-install-recommends -y \
-  # dependencies for building Python packages
-  build-essential \
-  # psycopg2 dependencies
-  libpq-dev
-
-# Requirements are installed here to ensure they will be cached.
-COPY ./requirements .
-
-# Create Python Dependency and Sub-Dependency Wheels.
-RUN pip wheel --wheel-dir /usr/src/app/wheels  \
-  -r ${BUILD_ENVIRONMENT}.txt
-
-
-# Python 'run' stage
-FROM python as python-run-stage
-
-ARG BUILD_ENVIRONMENT=production
-ARG APP_HOME=/app
-
-ENV PYTHONUNBUFFERED 1
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV BUILD_ENV ${BUILD_ENVIRONMENT}
-
-WORKDIR ${APP_HOME}
-
-RUN addgroup --system web \
-    && adduser --system --ingroup web web
-
-
-# Install required system dependencies
-RUN apt-get update && apt-get install --no-install-recommends -y \
-  # psycopg2 dependencies
-  libpq-dev \
-  # Translations dependencies
-  gettext \
+  sudo \
+  make \
+  vim \
+  gcc \
+  g++ \
   # cleaning up unused files
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   && rm -rf /var/lib/apt/lists/*
 
-# All absolute dir copies ignore workdir instruction. All relative dir copies are wrt to the workdir instruction
-# copy python dependency wheels from python-build-stage
-COPY --from=python-build-stage /usr/src/app/wheels  /wheels/
+# 下载并安装 Go
+RUN export ARCH=`dpkg --print-architecture` && curl -fsSL -v https://golang.org/dl/go${GO_VERSION}.linux-${ARCH}.tar.gz -o go.tar.gz && \
+  tar -C /usr/local -xzvf go.tar.gz && \
+  rm go.tar.gz
 
-# use wheels to install python dependencies
-RUN pip install --no-cache-dir --no-index --find-links=/wheels/ /wheels/* \
-  && rm -rf /wheels/
+# 前端工具安装
+RUN curl -sL https://deb.nodesource.com/setup_20.x | bash - && \
+  apt-get install nodejs -y && \
+  node --version && \
+  npm install -g pnpm && \
+  pnpm --version
 
+# 清理缓存及无用文件
+RUN apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-COPY --chown=django:django ./compose/production/django/entrypoint /entrypoint
+WORKDIR /app
+COPY . /app
+RUN make yogo
+
+FROM base as runtime-stage
+
+# 设置工作目录
+WORKDIR /app
+
+ARG BUILD_ENVIRONMENT=production
+ARG APP_HOME=/app
+ENV BUILD_ENV ${BUILD_ENVIRONMENT}
+
+COPY --from=build-stage /app/bin /app/bin
+RUN chmod 0755 /app/bin/*
+# Create devcontainer user and add it to sudoers
+RUN mkdir -p /etc/sudoers.d \
+  && groupadd --gid 1000 dev-user \
+  && useradd --uid 1000 --gid dev-user --shell /bin/bash --create-home dev-user \
+  && echo dev-user ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/dev-user \
+  && chmod 0440 /etc/sudoers.d/dev-user
+
+COPY ./compose/production/web/entrypoint /entrypoint
 RUN sed -i 's/\r$//g' /entrypoint
-RUN chmod +x /entrypoint
+RUN chmod +x /entrypoint && chown dev-user:dev-user /entrypoint
 
-
-COPY --chown=django:django ./compose/production/django/start /start
+COPY ./compose/production/web/start /start
 RUN sed -i 's/\r$//g' /start
-RUN chmod +x /start
-COPY --chown=django:django ./compose/production/django/celery/worker/start /start-celeryworker
-RUN sed -i 's/\r$//g' /start-celeryworker
-RUN chmod +x /start-celeryworker
+RUN chmod +x /start && chown dev-user:dev-user /start
 
-
-COPY --chown=django:django ./compose/production/django/celery/beat/start /start-celerybeat
-RUN sed -i 's/\r$//g' /start-celerybeat
-RUN chmod +x /start-celerybeat
-
-
-COPY --chown=django:django ./compose/production/django/celery/flower/start /start-flower
-RUN sed -i 's/\r$//g' /start-flower
-RUN chmod +x /start-flower
-
-
-# copy application code to WORKDIR
-COPY --chown=django:django . ${APP_HOME}
-
-# make web owner of the WORKDIR directory as well.
-RUN chown web:web ${APP_HOME}
-
-USER django
-
-RUN DATABASE_URL="" \
-  CELERY_BROKER_URL="" \
-  DJANGO_SETTINGS_MODULE="config.settings.test" \
-  python manage.py compilemessages
+RUN chown dev-user:dev-user /app
+WORKDIR ${APP_HOME}
+USER dev-user
 
 ENTRYPOINT ["/entrypoint"]

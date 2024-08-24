@@ -12,7 +12,15 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 RUN apt-get update && apt-get install --no-install-recommends -y \
-  sudo git bash-completion vim ssh gcc g++ net-tools \
+  sudo \
+  git \
+  bash-completion \
+  vim \
+  ssh \
+  gcc \
+  g++ \
+  net-tools \
+  make \
   htop \
   # cleaning up unused files
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
@@ -58,7 +66,9 @@ RUN mkdir -p /go && chown -R dev-user:dev-user /go
 
 # devcontainer dependencies and utils
 RUN apt-get update && apt-get install --no-install-recommends -y \
-  sudo git bash-completion vim ssh gcc g++ net-tools \
+  git \
+  bash-completion \
+  vim \
   htop \
   # cleaning up unused files
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
