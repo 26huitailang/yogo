@@ -19,6 +19,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       -
+        name: Checkout
+        uses: actions/checkout@v4
+      -
+        name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            peterchen0802/yogo
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+      -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       -
@@ -37,7 +52,5 @@ jobs:
           platforms: linux/amd64,linux/arm64
           file: ./compose/production/web/Dockerfile
           push: true
-          tags: |
-            peterchen0802/yogo:latest
-            peterchen0802/yogo:${{ env.TAG }}
-
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
