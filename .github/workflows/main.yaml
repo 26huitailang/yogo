@@ -9,6 +9,8 @@ run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
 on:
   push:
     branches: [main]
+    tags:
+      - "v*"
   pull_request:
     branches: [main]
 
@@ -35,5 +37,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           file: ./compose/production/web/Dockerfile
           push: true
-          tags: peterchen0802/yogo:latest
+          tags: |
+            peterchen0802/yogo:latest
+            peterchen0802/yogo:${{ env.TAG }}
 
