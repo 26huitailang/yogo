@@ -4,6 +4,6 @@ import (
 	"context"
 )
 
-func (ctx *Context) BaseContext() context.Context {
+func (ctx *ContainerContext) BaseContext() context.Context {
 	return ctx.Request.Context()
 }

@@ -2,7 +2,7 @@
 
 ## 重构方案
 
-为了避免修改gin源码，同时保持现有的service功能，我们可以采用包装器模式（Wrapper Pattern）来重构代码。主要步骤如下：
+为了避免修改gin源码，同时保持现有的service功能，我们采用包装器模式（Wrapper Pattern）来重构代码。主要步骤如下：
 
 ### 1. 创建容器包
 
@@ -33,72 +33,90 @@ type YogoContainer struct {
 创建一个包装gin.Engine的ContainerEngine，以及包装gin.Context的ContainerContext：
 
 ```go
-// framework/gin/wrapper.go
-package gin
-
+// framework/gin/container_engine.go
 type ContainerEngine struct {
-    *origingin.Engine
-    container framework.Container
+    *gin.Engine
+    container framework.Container // 使用接口而不是具体类型
 }
 
+// framework/gin/container_context.go
 type ContainerContext struct {
-    *origingin.Context
-    container framework.Container
-}
-
-type ContainerHandlerFunc func(*ContainerContext)
-```
-
-主要功能：
-- ContainerEngine 包装了gin.Engine，添加了容器支持
-- ContainerContext 包装了gin.Context，提供了容器相关的方法
-- 所有的HTTP方法(GET/POST等)都被重写为使用ContainerContext
-
-### 3. 修改现有代码
-
-需要修改的地方：
-
-1. HTTP引擎初始化：
-```go
-// app/http/kernel.go
-func NewHttpEngine(container framework.Container) (*gin.ContainerEngine, error) {
-    r := gin.NewContainerEngine()
-    r.SetContainer(container)
-    // ...
-    return r, nil
+    *gin.Context
+    container framework.Container // 使用接口而不是具体类型
 }
 ```
 
-2. 路由定义：
-```go
-// app/http/route.go
-func Routes(r *gin.ContainerEngine) {
-    container := r.GetContainer()
-    // ...
-}
-```
+### 3. 实现的主要功能
 
-3. 控制器方法：
-```go
-// app/http/module/demo/api.go
-func (api *DemoApi) Demo(c *gin.ContainerContext) {
-    c.JSON(200, "this is demo")
-}
-```
+1. ContainerEngine 包装了 gin.Engine：
+   - 添加了容器支持
+   - 实现了 GetContainer() 和 SetContainer() 方法
+   - 包装了所有主要的 HTTP 方法（GET、POST 等）
+   - 实现了路由组的包装
 
-## 优点
+2. ContainerContext 包装了 gin.Context：
+   - 提供了容器相关的方法（Make、MustMake 等）
+   - 实现了服务获取的便捷方法
+   - 保持了与原有 gin.Context 的兼容性
+
+3. 适配器层：
+   - 实现了 WrapHandler 和 WrapHandlers 函数
+   - 处理了中间件的适配
+   - 保证了与现有代码的兼容性
+
+### 4. 重构进展
+
+已完成的工作：
+1. 移除了对 gin 源码的直接修改
+2. 实现了基于接口的依赖注入
+3. 完成了主要包装器的实现
+4. 修复了编译错误
+5. 实现了更好的解耦
+
+主要改进：
+1. 使用 `framework.Container` 接口替代具体的 `*container.YogoContainer` 类型
+2. 重构了容器的创建方式，使用 `container.NewContainer()`
+3. 更新了所有相关方法签名，使用接口而不是具体类型
+4. 实现了更好的依赖倒置原则
+
+### 5. 优点
 
 1. 不再需要修改gin的源码，更容易升级gin版本
 2. 保持了原有的服务容器功能
 3. 代码结构更清晰，更容易维护
 4. 通过组合而不是继承来扩展功能，符合Go的设计理念
+5. 更容易进行单元测试
+6. 更容易扩展和替换实现
+7. 遵循了依赖倒置原则
 
-## 注意事项
+### 6. 注意事项
 
 1. 需要修改所有使用原来gin.Engine和gin.Context的代码
 2. 中间件可能需要适配新的Context类型
 3. 第三方包如果依赖gin.Context，需要在使用时进行类型转换
 4. 确保所有的路由处理函数都使用新的ContainerContext
+
+### 7. 后续工作
+
+1. 完善错误处理：
+   - 添加更详细的错误信息
+   - 实现统一的错误处理机制
+
+2. 优化中间件：
+   - 创建专门的中间件适配层
+   - 实现常用中间件的转换函数
+
+3. 完善文档：
+   - 为核心接口添加详细文档
+   - 编写使用示例和最佳实践
+
+4. 添加测试：
+   - 编写单元测试
+   - 添加集成测试
+
+5. 性能优化：
+   - 优化容器的实例管理
+   - 添加缓存机制
 
 ## 迁移步骤
 

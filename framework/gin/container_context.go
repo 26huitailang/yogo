@@ -1,18 +1,18 @@
 package gin
 
 import (
-	"github.com/26huitailang/yogo/framework/container"
+	"github.com/26huitailang/yogo/framework"
 	"github.com/gin-gonic/gin"
 )
 
 // ContainerContext 是 gin.Context 的包装器
 type ContainerContext struct {
 	*gin.Context
-	container *container.YogoContainer
+	container framework.Container
 }
 
 // NewContainerContext 创建一个新的 ContainerContext
-func NewContainerContext(c *gin.Context, container *container.YogoContainer) *ContainerContext {
+func NewContainerContext(c *gin.Context, container framework.Container) *ContainerContext {
 	return &ContainerContext{
 		Context:   c,
 		container: container,
@@ -40,6 +40,6 @@ func (c *ContainerContext) IsBind(key string) bool {
 }
 
 // GetContainer 获取容器实例
-func (c *ContainerContext) GetContainer() *container.YogoContainer {
+func (c *ContainerContext) GetContainer() framework.Container {
 	return c.container
 }

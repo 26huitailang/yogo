@@ -24,7 +24,7 @@ type localFileSystem struct {
 
 func LocalFile(root string, indexes bool) *localFileSystem {
 	return &localFileSystem{
-		FileSystem: gin.Dir(root, indexes),
+		FileSystem: http.Dir(root),
 		root:       root,
 		indexes:    indexes,
 	}
@@ -51,17 +51,17 @@ func (l *localFileSystem) Exists(prefix string, filepath string) bool {
 	return false
 }
 
-func ServeRoot(urlPrefix, root string) gin.HandlerFunc {
+func ServeRoot(urlPrefix, root string) func(*gin.ContainerContext) {
 	return Serve(urlPrefix, LocalFile(root, false))
 }
 
 // Static returns a middleware handler that serves static files in the given directory.
-func Serve(urlPrefix string, fs ServeFileSystem) gin.HandlerFunc {
+func Serve(urlPrefix string, fs ServeFileSystem) func(*gin.ContainerContext) {
 	fileserver := http.FileServer(fs)
 	if urlPrefix != "" {
 		fileserver = http.StripPrefix(urlPrefix, fileserver)
 	}
-	return func(c *gin.Context) {
+	return func(c *gin.ContainerContext) {
 		if fs.Exists(urlPrefix, c.Request.URL.Path) {
 			fileserver.ServeHTTP(c.Writer, c.Request)
 			c.Abort()

@@ -42,7 +42,7 @@ type IResponse interface {
 	ISetOkStatus() IResponse
 }
 
-func (ctx *Context) IJson(obj interface{}) IResponse {
+func (ctx *ContainerContext) IJson(obj interface{}) IResponse {
 	byt, err := json.Marshal(obj)
 	if err != nil {
 		return ctx.ISetStatus(http.StatusInternalServerError)
@@ -52,7 +52,7 @@ func (ctx *Context) IJson(obj interface{}) IResponse {
 	return ctx
 }
 
-func (ctx *Context) IJsonp(obj interface{}) IResponse {
+func (ctx *ContainerContext) IJsonp(obj interface{}) IResponse {
 	// 获取请求参数callback
 	callbackFunc := ctx.Query("callback")
 	ctx.ISetHeader("Content-Type", "application/javascript")
@@ -86,7 +86,7 @@ func (ctx *Context) IJsonp(obj interface{}) IResponse {
 	return ctx
 }
 
-func (ctx *Context) IXml(obj interface{}) IResponse {
+func (ctx *ContainerContext) IXml(obj interface{}) IResponse {
 	byt, err := xml.Marshal(obj)
 	if err != nil {
 		return ctx.ISetStatus(http.StatusInternalServerError)
@@ -96,7 +96,7 @@ func (ctx *Context) IXml(obj interface{}) IResponse {
 	return ctx
 }
 
-func (ctx *Context) IHtml(file string, obj interface{}) IResponse {
+func (ctx *ContainerContext) IHtml(file string, obj interface{}) IResponse {
 	// 读取模版文件，创建template实例
 	t, err := template.New("output").ParseFiles(file)
 	if err != nil {
@@ -111,7 +111,7 @@ func (ctx *Context) IHtml(file string, obj interface{}) IResponse {
 	return ctx
 }
 
-func (ctx *Context) IText(format string, values ...interface{}) IResponse {
+func (ctx *ContainerContext) IText(format string, values ...interface{}) IResponse {
 	out := fmt.Sprintf(format, values...)
 	ctx.ISetHeader("Content-Type", "application/text")
 	ctx.Writer.Write([]byte(out))
@@ -119,18 +119,18 @@ func (ctx *Context) IText(format string, values ...interface{}) IResponse {
 }
 
 // 重定向
-func (ctx *Context) IRedirect(path string) IResponse {
+func (ctx *ContainerContext) IRedirect(path string) IResponse {
 	http.Redirect(ctx.Writer, ctx.Request, path, http.StatusMovedPermanently)
 	return ctx
 }
 
-func (ctx *Context) ISetHeader(key string, val string) IResponse {
+func (ctx *ContainerContext) ISetHeader(key string, val string) IResponse {
 	ctx.Writer.Header().Add(key, val)
 	return ctx
 }
 
 // Cookie
-func (ctx *Context) ISetCookie(key string, val string, maxAge int, path string, domain string, secure bool, httpOnly bool) IResponse {
+func (ctx *ContainerContext) ISetCookie(key string, val string, maxAge int, path string, domain string, secure bool, httpOnly bool) IResponse {
 	if path == "" {
 		path = "/"
 	}
@@ -148,13 +148,13 @@ func (ctx *Context) ISetCookie(key string, val string, maxAge int, path string, 
 }
 
 // 设置状态码
-func (ctx *Context) ISetStatus(code int) IResponse {
+func (ctx *ContainerContext) ISetStatus(code int) IResponse {
 	ctx.Writer.WriteHeader(code)
 	return ctx
 }
 
 // 设置200状态
-func (ctx *Context) ISetOkStatus() IResponse {
+func (ctx *ContainerContext) ISetOkStatus() IResponse {
 	ctx.Writer.WriteHeader(http.StatusOK)
 	return ctx
 }

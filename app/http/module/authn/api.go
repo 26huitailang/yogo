@@ -38,7 +38,7 @@ func NewAuthnApi() *AuthnApi {
 // @Tags webauthn
 // @Success 200 array *webauthn.protocol.CredentialCreateOptions
 // @Router /webauthn/register/begin/:username [get]
-func (api *AuthnApi) RegisterBegin(c *gin.Context) {
+func (api *AuthnApi) RegisterBegin(c *gin.ContainerContext) {
 	username := c.Param("username")
 	user, err := datastore.GetUser(username) // Find or create the new user
 	if err != nil {
@@ -67,7 +67,7 @@ func (api *AuthnApi) RegisterBegin(c *gin.Context) {
 // @Tags webauthn
 // @Success 200 {array} UserDTO
 // @Router /demo/demo2 [get]
-func (api *AuthnApi) RegisterFinish(c *gin.Context) {
+func (api *AuthnApi) RegisterFinish(c *gin.ContainerContext) {
 	logger := c.MustMakeLog()
 	username := c.Param("username")
 	user, err := datastore.GetUser(username)
@@ -104,7 +104,7 @@ func (api *AuthnApi) RegisterFinish(c *gin.Context) {
 // @Tags webauthn
 // @Success 200 array *webauthn.protocol.CredentialCreateOptions
 // @Router /webauthn/login/begin/:username [get]
-func (api *AuthnApi) LoginBegin(c *gin.Context) {
+func (api *AuthnApi) LoginBegin(c *gin.ContainerContext) {
 	username := c.Param("username")
 	user, err := datastore.GetUser(username) // Find or create the new user
 	if err != nil {
@@ -127,7 +127,7 @@ func (api *AuthnApi) LoginBegin(c *gin.Context) {
 // @Tags webauthn
 // @Success 200 {array} UserDTO
 // @Router /webauthn/login/finish/:username [post]
-func (api *AuthnApi) LoginFinish(c *gin.Context) {
+func (api *AuthnApi) LoginFinish(c *gin.ContainerContext) {
 	username := c.Param("username")
 	user, err := datastore.GetUser(username)
 	if err != nil {

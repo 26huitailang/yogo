@@ -67,16 +67,15 @@ type IRequest interface {
 }
 
 // 获取请求地址中所有参数
-func (ctx *Context) QueryAll() map[string][]string {
-	ctx.initQueryCache()
-	return map[string][]string(ctx.queryCache)
+func (ctx *ContainerContext) QueryAll() map[string][]string {
+	return ctx.Request.URL.Query()
 }
 
 // 请求地址url中带的参数
 // 形如: foo.com?a=1&b=bar&c[]=bar
 
 // 获取Int类型的请求参数
-func (ctx *Context) DefaultQueryInt(key string, def int) (int, bool) {
+func (ctx *ContainerContext) DefaultQueryInt(key string, def int) (int, bool) {
 	params := ctx.QueryAll()
 	if vals, ok := params[key]; ok {
 		if len(vals) > 0 {
@@ -87,7 +86,7 @@ func (ctx *Context) DefaultQueryInt(key string, def int) (int, bool) {
 	return def, false
 }
 
-func (ctx *Context) DefaultQueryInt64(key string, def int64) (int64, bool) {
+func (ctx *ContainerContext) DefaultQueryInt64(key string, def int64) (int64, bool) {
 	params := ctx.QueryAll()
 	if vals, ok := params[key]; ok {
 		if len(vals) > 0 {
@@ -97,7 +96,7 @@ func (ctx *Context) DefaultQueryInt64(key string, def int64) (int64, bool) {
 	return def, false
 }
 
-func (ctx *Context) DefaultQueryFloat64(key string, def float64) (float64, bool) {
+func (ctx *ContainerContext) DefaultQueryFloat64(key string, def float64) (float64, bool) {
 	params := ctx.QueryAll()
 	if vals, ok := params[key]; ok {
 		if len(vals) > 0 {
@@ -107,7 +106,7 @@ func (ctx *Context) DefaultQueryFloat64(key string, def float64) (float64, bool)
 	return def, false
 }
 
-func (ctx *Context) DefaultQueryFloat32(key string, def float32) (float32, bool) {
+func (ctx *ContainerContext) DefaultQueryFloat32(key string, def float32) (float32, bool) {
 	params := ctx.QueryAll()
 	if vals, ok := params[key]; ok {
 		if len(vals) > 0 {
@@ -117,7 +116,7 @@ func (ctx *Context) DefaultQueryFloat32(key string, def float32) (float32, bool)
 	return def, false
 }
 
-func (ctx *Context) DefaultQueryBool(key string, def bool) (bool, bool) {
+func (ctx *ContainerContext) DefaultQueryBool(key string, def bool) (bool, bool) {
 	params := ctx.QueryAll()
 	if vals, ok := params[key]; ok {
 		if len(vals) > 0 {
@@ -127,7 +126,7 @@ func (ctx *Context) DefaultQueryBool(key string, def bool) (bool, bool) {
 	return def, false
 }
 
-func (ctx *Context) DefaultQueryString(key string, def string) (string, bool) {
+func (ctx *ContainerContext) DefaultQueryString(key string, def string) (string, bool) {
 	params := ctx.QueryAll()
 	if vals, ok := params[key]; ok {
 		if len(vals) > 0 {
@@ -137,7 +136,7 @@ func (ctx *Context) DefaultQueryString(key string, def string) (string, bool) {
 	return def, false
 }
 
-func (ctx *Context) DefaultQueryStringSlice(key string, def []string) ([]string, bool) {
+func (ctx *ContainerContext) DefaultQueryStringSlice(key string, def []string) ([]string, bool) {
 	params := ctx.QueryAll()
 	if vals, ok := params[key]; ok {
 		return vals, true
@@ -145,61 +144,63 @@ func (ctx *Context) DefaultQueryStringSlice(key string, def []string) ([]string,
 	return def, false
 }
 
-func (ctx *Context) DefaultParamInt(key string, def int) (int, bool) {
+func (ctx *ContainerContext) DefaultParamInt(key string, def int) (int, bool) {
 	if val := ctx.YogoParam(key); val != nil {
 		return cast.ToInt(val), true
 	}
 	return def, false
 }
 
-func (ctx *Context) DefaultParamInt64(key string, def int64) (int64, bool) {
+func (ctx *ContainerContext) DefaultParamInt64(key string, def int64) (int64, bool) {
 	if val := ctx.YogoParam(key); val != nil {
 		return cast.ToInt64(val), true
 	}
 	return def, false
 }
 
-func (ctx *Context) DefaultParamFloat64(key string, def float64) (float64, bool) {
+func (ctx *ContainerContext) DefaultParamFloat64(key string, def float64) (float64, bool) {
 	if val := ctx.YogoParam(key); val != nil {
 		return cast.ToFloat64(val), true
 	}
 	return def, false
 }
 
-func (ctx *Context) DefaultParamFloat32(key string, def float32) (float32, bool) {
+func (ctx *ContainerContext) DefaultParamFloat32(key string, def float32) (float32, bool) {
 	if val := ctx.YogoParam(key); val != nil {
 		return cast.ToFloat32(val), true
 	}
 	return def, false
 }
 
-func (ctx *Context) DefaultParamBool(key string, def bool) (bool, bool) {
+func (ctx *ContainerContext) DefaultParamBool(key string, def bool) (bool, bool) {
 	if val := ctx.YogoParam(key); val != nil {
 		return cast.ToBool(val), true
 	}
 	return def, false
 }
 
-func (ctx *Context) DefaultParamString(key string, def string) (string, bool) {
+func (ctx *ContainerContext) DefaultParamString(key string, def string) (string, bool) {
 	if val := ctx.YogoParam(key); val != nil {
 		return cast.ToString(val), true
 	}
 	return def, false
 }
 
-func (ctx *Context) YogoParam(key string) interface{} {
+func (ctx *ContainerContext) YogoParam(key string) interface{} {
 	if val, ok := ctx.Params.Get(key); ok {
 		return val
 	}
 	return nil
 }
 
-func (ctx *Context) FormAll() map[string][]string {
-	ctx.initFormCache()
-	return map[string][]string(ctx.formCache)
+func (ctx *ContainerContext) FormAll() map[string][]string {
+	if err := ctx.Request.ParseForm(); err != nil {
+		return map[string][]string{}
+	}
+	return ctx.Request.PostForm
 }
 
-func (ctx *Context) DefaultFormInt64(key string, def int64) (int64, bool) {
+func (ctx *ContainerContext) DefaultFormInt64(key string, def int64) (int64, bool) {
 	params := ctx.FormAll()
 	if vals, ok := params[key]; ok {
 		if len(vals) > 0 {
@@ -209,7 +210,7 @@ func (ctx *Context) DefaultFormInt64(key string, def int64) (int64, bool) {
 	return def, false
 }
 
-func (ctx *Context) DefaultFormFloat64(key string, def float64) (float64, bool) {
+func (ctx *ContainerContext) DefaultFormFloat64(key string, def float64) (float64, bool) {
 	params := ctx.FormAll()
 	if vals, ok := params[key]; ok {
 		if len(vals) > 0 {
@@ -219,7 +220,7 @@ func (ctx *Context) DefaultFormFloat64(key string, def float64) (float64, bool) 
 	return def, false
 }
 
-func (ctx *Context) DefaultFormFloat32(key string, def float32) (float32, bool) {
+func (ctx *ContainerContext) DefaultFormFloat32(key string, def float32) (float32, bool) {
 	params := ctx.FormAll()
 	if vals, ok := params[key]; ok {
 		if len(vals) > 0 {
@@ -229,7 +230,7 @@ func (ctx *Context) DefaultFormFloat32(key string, def float32) (float32, bool) 
 	return def, false
 }
 
-func (ctx *Context) DefaultFormBool(key string, def bool) (bool, bool) {
+func (ctx *ContainerContext) DefaultFormBool(key string, def bool) (bool, bool) {
 	params := ctx.FormAll()
 	if vals, ok := params[key]; ok {
 		if len(vals) > 0 {
@@ -239,7 +240,7 @@ func (ctx *Context) DefaultFormBool(key string, def bool) (bool, bool) {
 	return def, false
 }
 
-func (ctx *Context) DefaultFormStringSlice(key string, def []string) ([]string, bool) {
+func (ctx *ContainerContext) DefaultFormStringSlice(key string, def []string) ([]string, bool) {
 	params := ctx.FormAll()
 	if vals, ok := params[key]; ok {
 		return vals, true
@@ -247,7 +248,7 @@ func (ctx *Context) DefaultFormStringSlice(key string, def []string) ([]string, 
 	return def, false
 }
 
-func (ctx *Context) DefaultForm(key string) interface{} {
+func (ctx *ContainerContext) DefaultForm(key string) interface{} {
 	params := ctx.FormAll()
 	if vals, ok := params[key]; ok {
 		if len(vals) > 0 {

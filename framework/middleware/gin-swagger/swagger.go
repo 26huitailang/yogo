@@ -53,7 +53,7 @@ func DefaultModelsExpandDepth(depth int) func(c *Config) {
 }
 
 // WrapHandler wraps `http.Handler` into `gin.HandlerFunc`.
-func WrapHandler(h *webdav.Handler, confs ...func(c *Config)) gin.HandlerFunc {
+func WrapHandler(h *webdav.Handler, confs ...func(c *Config)) func(*gin.ContainerContext) {
 	defaultConfig := &Config{
 		URL:                      "doc.json",
 		DeepLinking:              true,
@@ -69,7 +69,7 @@ func WrapHandler(h *webdav.Handler, confs ...func(c *Config)) gin.HandlerFunc {
 }
 
 // CustomWrapHandler wraps `http.Handler` into `gin.HandlerFunc`
-func CustomWrapHandler(config *Config, handler *webdav.Handler) gin.HandlerFunc {
+func CustomWrapHandler(config *Config, handler *webdav.Handler) func(*gin.ContainerContext) {
 	var once sync.Once
 
 	// create a template with name
@@ -78,7 +78,7 @@ func CustomWrapHandler(config *Config, handler *webdav.Handler) gin.HandlerFunc 
 
 	var rexp = regexp.MustCompile(`(.*)(index\.html|doc\.json|favicon-16x16\.png|favicon-32x32\.png|/oauth2-redirect\.html|swagger-ui\.css|swagger-ui\.css\.map|swagger-ui\.js|swagger-ui\.js\.map|swagger-ui-bundle\.js|swagger-ui-bundle\.js\.map|swagger-ui-standalone-preset\.js|swagger-ui-standalone-preset\.js\.map)[\?|.]*`)
 
-	return func(c *gin.Context) {
+	return func(c *gin.ContainerContext) {
 		matches := rexp.FindStringSubmatch(c.Request.RequestURI)
 
 		if len(matches) != 3 {
@@ -110,7 +110,6 @@ func CustomWrapHandler(config *Config, handler *webdav.Handler) gin.HandlerFunc 
 			doc, err := swag.ReadDoc()
 			if err != nil {
 				c.AbortWithStatus(http.StatusInternalServerError)
-
 				return
 			}
 			_, _ = c.Writer.Write([]byte(doc))
@@ -122,10 +121,10 @@ func CustomWrapHandler(config *Config, handler *webdav.Handler) gin.HandlerFunc 
 
 // DisablingWrapHandler turn handler off
 // if specified environment variable passed
-func DisablingWrapHandler(h *webdav.Handler, envName string) gin.HandlerFunc {
+func DisablingWrapHandler(h *webdav.Handler, envName string) func(*gin.ContainerContext) {
 	eFlag := os.Getenv(envName)
 	if eFlag != "" {
-		return func(c *gin.Context) {
+		return func(c *gin.ContainerContext) {
 			// Simulate behavior when route unspecified and
 			// return 404 HTTP code
 			c.String(404, "")
@@ -137,10 +136,10 @@ func DisablingWrapHandler(h *webdav.Handler, envName string) gin.HandlerFunc {
 
 // DisablingCustomWrapHandler turn handler off
 // if specified environment variable passed
-func DisablingCustomWrapHandler(config *Config, h *webdav.Handler, envName string) gin.HandlerFunc {
+func DisablingCustomWrapHandler(config *Config, h *webdav.Handler, envName string) func(*gin.ContainerContext) {
 	eFlag := os.Getenv(envName)
 	if eFlag != "" {
-		return func(c *gin.Context) {
+		return func(c *gin.ContainerContext) {
 			// Simulate behavior when route unspecified and
 			// return 404 HTTP code
 			c.String(404, "")

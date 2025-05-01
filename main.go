@@ -4,7 +4,7 @@ import (
 	"github.com/26huitailang/yogo/app/console"
 	"github.com/26huitailang/yogo/app/http"
 	"github.com/26huitailang/yogo/app/provider/demo"
-	"github.com/26huitailang/yogo/framework"
+	"github.com/26huitailang/yogo/framework/container"
 	"github.com/26huitailang/yogo/framework/provider/app"
 	"github.com/26huitailang/yogo/framework/provider/cache"
 	"github.com/26huitailang/yogo/framework/provider/config"
@@ -18,7 +18,7 @@ import (
 )
 
 func main() {
-	container := framework.NewYogoContainer()
+	container := container.NewContainer()
 	container.Bind(&app.YogoAppProvider{})
 	// 其他服务提供者绑定
 	container.Bind(&distributed.LocalDistributedProvider{})

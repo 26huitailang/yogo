@@ -7,7 +7,7 @@ import (
 )
 
 type YogoKernelProvider struct {
-	HttpEngine *gin.Engine
+	HttpEngine *gin.ContainerEngine
 }
 
 func (y *YogoKernelProvider) Register(container framework.Container) framework.NewInstance {
@@ -16,9 +16,8 @@ func (y *YogoKernelProvider) Register(container framework.Container) framework.N
 
 func (y *YogoKernelProvider) Boot(container framework.Container) error {
 	if y.HttpEngine == nil {
-		y.HttpEngine = gin.Default()
+		y.HttpEngine = gin.New()
 	}
-	y.HttpEngine.SetContainer(container)
 	return nil
 }
 

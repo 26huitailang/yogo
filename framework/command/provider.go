@@ -7,8 +7,8 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/26huitailang/yogo/framework"
 	"github.com/26huitailang/yogo/framework/cobra"
+	"github.com/26huitailang/yogo/framework/container"
 	"github.com/26huitailang/yogo/framework/contract"
 	"github.com/26huitailang/yogo/framework/util"
 	"github.com/AlecAivazis/survey/v2"
@@ -38,8 +38,8 @@ var providerListCommand = &cobra.Command{
 	Use:   "list",
 	Short: "服务列表",
 	RunE: func(c *cobra.Command, args []string) error {
-		container := c.GetContainer()
-		yogoContainer := container.(*framework.YogoContainer)
+		cont := c.GetContainer()
+		yogoContainer := cont.(*container.YogoContainer)
 		list := yogoContainer.NameList()
 		for _, line := range list {
 			println(line)
@@ -54,7 +54,7 @@ var providerCreateCommand = &cobra.Command{
 	Aliases: []string{"create", "init"},
 	Short:   "创建一个服务",
 	RunE: func(c *cobra.Command, args []string) error {
-		container := c.GetContainer()
+		cont := c.GetContainer()
 		fmt.Println("创建一个服务")
 		var name string
 		var folder string
@@ -78,7 +78,7 @@ var providerCreateCommand = &cobra.Command{
 		}
 
 		// 检查服务是否存在
-		providers := container.(*framework.YogoContainer).NameList()
+		providers := cont.(*container.YogoContainer).NameList()
 		providerColl := collection.NewStrCollection(providers)
 		if providerColl.Contains(name) {
 			fmt.Println("服务名称已经存在")
@@ -89,7 +89,7 @@ var providerCreateCommand = &cobra.Command{
 			folder = name
 		}
 
-		app := container.MustMake(contract.AppKey).(contract.App)
+		app := cont.MustMake(contract.AppKey).(contract.App)
 
 		pFolder := app.ProviderFolder()
 		subFolders, err := util.SubDir(pFolder)
