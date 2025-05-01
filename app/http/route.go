@@ -10,7 +10,7 @@ import (
 	"github.com/26huitailang/yogo/framework/middleware/static"
 )
 
-func Routes(r *gin.Engine) {
+func Routes(r *gin.ContainerEngine) {
 	container := r.GetContainer()
 	configService := container.MustMake(contract.ConfigKey).(contract.Config)
 

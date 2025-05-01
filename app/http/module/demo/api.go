@@ -9,7 +9,7 @@ type DemoApi struct {
 	service *Service
 }
 
-func Register(r *gin.Engine) error {
+func Register(r *gin.ContainerEngine) error {
 	api := NewDemoApi()
 	r.Bind(&demoService.DemoProvider{})
 
@@ -33,7 +33,7 @@ func NewDemoApi() *DemoApi {
 // @Tags demo
 // @Success 200 array []UserDTO
 // @Router /demo/demo [get]
-func (api *DemoApi) Demo(c *gin.Context) {
+func (api *DemoApi) Demo(c *gin.ContainerContext) {
 	c.JSON(200, "this is demo for dev all")
 }
 
@@ -44,14 +44,14 @@ func (api *DemoApi) Demo(c *gin.Context) {
 // @Tags demo
 // @Success 200 {array} UserDTO
 // @Router /demo/demo2 [get]
-func (api *DemoApi) Demo2(c *gin.Context) {
+func (api *DemoApi) Demo2(c *gin.ContainerContext) {
 	demoProvider := c.MustMake(demoService.DemoKey).(demoService.IService)
 	students := demoProvider.GetAllStudent()
 	usersDTO := StudentsToUserDTOs(students)
 	c.JSON(200, usersDTO)
 }
 
-func (api *DemoApi) DemoPost(c *gin.Context) {
+func (api *DemoApi) DemoPost(c *gin.ContainerContext) {
 	type Foo struct {
 		Name string
 	}
@@ -61,4 +61,14 @@ func (api *DemoApi) DemoPost(c *gin.Context) {
 		c.AbortWithError(500, err)
 	}
 	c.JSON(200, nil)
+}
+
+func (api *DemoApi) DemoOrm(c *gin.ContainerContext) {
+	// todo: implement
+	c.JSON(200, "this is demo for orm")
+}
+
+func (api *DemoApi) DemoCache(c *gin.ContainerContext) {
+	// todo: implement
+	c.JSON(200, "this is demo for cache")
 }

@@ -13,7 +13,7 @@ import (
 type AuthnApi struct {
 }
 
-func Register(r *gin.Engine) error {
+func Register(r *gin.ContainerEngine) error {
 	datastore = NewDatasotre()
 	webAuthn, _ = NewWebAuthNService()
 	api := NewAuthnApi()
@@ -23,6 +23,7 @@ func Register(r *gin.Engine) error {
 	webauthnGroup.POST("/register/finish/:username", api.RegisterFinish)
 	webauthnGroup.GET("/login/begin/:username", api.LoginBegin)
 	webauthnGroup.POST("/login/finish/:username", api.LoginFinish)
+	r.GET("/authn/oauth2", api.OAuth2)
 	return nil
 }
 
@@ -151,4 +152,8 @@ func (api *AuthnApi) LoginFinish(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, "Login Success")
+}
+
+func (api *AuthnApi) OAuth2(c *gin.ContainerContext) {
+	c.JSON(200, "this is oauth2 for dev all")
 }

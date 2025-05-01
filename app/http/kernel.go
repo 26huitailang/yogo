@@ -5,9 +5,9 @@ import (
 	"github.com/26huitailang/yogo/framework/gin"
 )
 
-func NewHttpEngine(container framework.Container) (*gin.Engine, error) {
+func NewHttpEngine(container framework.Container) (*gin.ContainerEngine, error) {
 	gin.SetMode(gin.ReleaseMode)
-	r := gin.New()
+	r := gin.NewContainerEngine()
 	r.SetContainer(container)
 	r.Use(gin.Recovery())
 	Routes(r)
