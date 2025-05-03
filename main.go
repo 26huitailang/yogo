@@ -18,21 +18,21 @@ import (
 )
 
 func main() {
-	container := container.NewContainer()
-	container.Bind(&app.YogoAppProvider{})
+	c := container.NewContainer()
+	c.Bind(&app.YogoAppProvider{})
 	// 其他服务提供者绑定
-	container.Bind(&distributed.LocalDistributedProvider{})
-	container.Bind(&env.YogoEnvProvider{})
-	container.Bind(&config.YogoConfigProvider{})
-	container.Bind(&log.YogoLogServiceProvider{})
-	container.Bind(&orm.GormProvider{})
-	container.Bind(&redis.RedisProvider{})
-	container.Bind(&cache.YogoCacheProvider{})
-	container.Bind(&ssh.SSHProvider{})
-	container.Bind(&demo.DemoProvider{})
+	c.Bind(&distributed.LocalDistributedProvider{})
+	c.Bind(&env.YogoEnvProvider{})
+	c.Bind(&config.YogoConfigProvider{})
+	c.Bind(&log.YogoLogServiceProvider{})
+	c.Bind(&orm.GormProvider{})
+	c.Bind(&redis.RedisProvider{})
+	c.Bind(&cache.YogoCacheProvider{})
+	c.Bind(&ssh.SSHProvider{})
+	c.Bind(&demo.DemoProvider{})
 
-	if engine, err := http.NewHttpEngine(container); err == nil {
-		container.Bind(&kernel.YogoKernelProvider{HttpEngine: engine})
+	if engine, err := http.NewHttpEngine(c); err == nil {
+		c.Bind(&kernel.YogoKernelProvider{HttpEngine: engine})
 	}
-	console.RunCommand(container)
+	console.RunCommand(c)
 }
