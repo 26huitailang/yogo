@@ -136,14 +136,11 @@ func (c *YogoContainer) newInstance(sp framework.ServiceProvider, params []inter
 	return ins, nil
 }
 
-// NameList 返回所有已注册的服务提供者名称
+// NameList 返回所有已注册服务的名称
 func (c *YogoContainer) NameList() []string {
-	ret := make([]string, 0)
-	c.lock.RLock()
-	defer c.lock.RUnlock()
-	for _, provider := range c.providers {
-		name := provider.Name()
-		ret = append(ret, name)
+	names := make([]string, 0, len(c.providers))
+	for name := range c.providers {
+		names = append(names, name)
 	}
-	return ret
+	return names
 }

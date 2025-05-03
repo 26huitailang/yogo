@@ -84,6 +84,7 @@ type Proxy struct {
 	devConfig   *devConfig // 配置文件
 	backendPid  int        // 当前的backend服务的pid
 	frontendPid int        // 当前的frontend服务的pid
+	container   framework.Container
 }
 
 // NewProxy 初始化一个Proxy
@@ -91,6 +92,7 @@ func NewProxy(c framework.Container) *Proxy {
 	devConfig := initDevConfig(c)
 	return &Proxy{
 		devConfig: devConfig,
+		container: c,
 	}
 }
 
@@ -201,6 +203,15 @@ func (p *Proxy) restartFrontend() error {
 	if err != nil {
 		return err
 	}
+
+	// 切换到前端目录
+	appService := p.container.MustMake(contract.AppKey).(contract.App)
+	frontendFolder := filepath.Join(appService.BaseFolder(), "frontend")
+	if err := os.Chdir(frontendFolder); err != nil {
+		fmt.Printf("切换到前端目录失败: %v\n", err)
+		return err
+	}
+
 	cmd := exec.Command(path, "dev")
 	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, fmt.Sprintf("%s%s", "PORT=", port))

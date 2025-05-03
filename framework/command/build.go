@@ -43,6 +43,16 @@ var buildFrontendCommand = &cobra.Command{
 			log.Fatalln("请安装yarn在你的PATH路径下")
 		}
 
+		// 获取前端目录
+		container := c.GetContainer()
+		appService := container.MustMake(contract.AppKey).(contract.App)
+		frontendFolder := filepath.Join(appService.BaseFolder(), "frontend")
+
+		// 切换到前端目录
+		if err := os.Chdir(frontendFolder); err != nil {
+			fmt.Printf("切换到前端目录失败: %v\n", err)
+			return err
+		}
 		cmd := exec.Command(path, "build")
 		out, err := cmd.CombinedOutput()
 		if err != nil {
