@@ -1,13 +1,13 @@
 # yogo
 
-- quasar: vue3 + vite
+- nuxtjs
 - gin: web framework
 - cobra: cli
 
 ## todo
 
-- [ ] casbin, https://github.com/gin-contrib/authz
-- [ ] oauth2
+- casbin, https://github.com/gin-contrib/authz
+- oauth2
 
 ## Project Tree
 
